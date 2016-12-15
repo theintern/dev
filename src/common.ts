@@ -64,6 +64,16 @@ export function exec(command: string, options?: ExecOptions) {
 /**
  * Get the set of non-source code resources that are part of the build.
  */
+export function getConfigs(): string[] {
+	if (internDev && internDev.configs) {
+		return internDev.configs;
+	}
+	return [ 'tsconfig.json' ].concat(glob('*/**/tsconfig.json'));
+}
+
+/**
+ * Get the set of non-source code resources that are part of the build.
+ */
 export function getResources() {
 	let resources: { [key: string]: string[] } = {
 		src: [
@@ -114,5 +124,5 @@ export function glob(patterns: string | string[]) {
 		});
 	});
 
-	return Object.keys(matches).sort();
+	return Object.keys(matches);
 }
