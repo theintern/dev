@@ -3,7 +3,7 @@
 import { watch } from 'chokidar';
 import { echo, exec } from 'shelljs';
 import { join } from 'path';
-import { buildDir, copyAll, getResources, glob } from './common';
+import { buildDir, copyAll, getConfigs, getResources } from './common';
 
 function createCopier(dest: string) {
 	let outDir = join(buildDir, dest);
@@ -12,11 +12,7 @@ function createCopier(dest: string) {
 	};
 }
 
-glob('**/tsconfig.json').forEach(function (tsconfig) {
-	echo(`## Starting tsc watcher for ${tsconfig}`);
-	exec(`tsc --project "${tsconfig}" --watch`, { async: true });
-});
-
+// Copy resources first in case some of them are needed for builds
 const resources = getResources();
 
 Object.keys(resources).forEach(function (dest) {
@@ -29,4 +25,9 @@ Object.keys(resources).forEach(function (dest) {
 	}).on('error', function (error) {
 		echo('Watcher error:', error);
 	});
+});
+
+getConfigs().forEach(function (tsconfig) {
+	echo(`## Starting tsc watcher for ${tsconfig}`);
+	exec(`tsc --project "${tsconfig}" --watch`, { async: true });
 });
