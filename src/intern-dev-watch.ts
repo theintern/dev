@@ -1,9 +1,11 @@
 #!/usr/bin/env node 
 
 import { watch } from 'chokidar';
+import { ChildProcess } from 'child_process';
 import { echo, exec } from 'shelljs';
 import { join } from 'path';
-import { buildDir, copyAll, getConfigs, getResources } from './common';
+import { buildDir, copyAll, fixSourceMaps, getConfigs, getResources } from './common';
+import { red } from 'chalk';
 
 function createCopier(dest: string) {
 	let outDir = join(buildDir, dest);
@@ -27,7 +29,24 @@ Object.keys(resources).forEach(function (dest) {
 	});
 });
 
-getConfigs().forEach(function (tsconfig) {
+getConfigs().forEach(tsconfig => {
 	echo(`## Starting tsc watcher for ${tsconfig}`);
-	exec(`tsc --project "${tsconfig}" --watch`, { async: true });
+	const child: ChildProcess = <ChildProcess>exec(`tsc --project "${tsconfig}" --watch`, {
+		async: true,
+		silent: true
+	});
+
+	child.stdout.on('data', (data: string) => {
+		data.split('\n').filter(line => {
+			return line !== '';
+		}).forEach(line => {
+			if (/\): error TS/.test(data)) {
+				line = red(line);
+			}
+			else if (line.indexOf('Compilation complete') !== -1) {
+				fixSourceMaps();
+			}
+			echo(line);
+		});
+	});
 });

@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
-import { cp, echo, exec as shellExec, mkdir, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
+import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
 import { sync as globSync } from 'glob';
-import { dirname, join, normalize } from 'path';
+import { basename, dirname, join, normalize } from 'path';
 import { red } from 'chalk';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
@@ -62,6 +62,17 @@ export function exec(command: string, options?: ExecOptions) {
 }
 
 /**
+ * If the project has inline sources in source maps set, set the path to the
+ * source file to be a sibling of the compiled file.
+ */
+export function fixSourceMaps() {
+	globSync(join(buildDir, '**', '*.js.map'), { nodir: true }).forEach(filename => {
+		sed('-i', /("sources":\[")(.*?)("\])/,
+			`$1${basename(filename, '.js.map')}.ts$3`, filename);
+	});
+}
+
+/**
  * Get the set of non-source code resources that are part of the build.
  */
 export function getConfigs(): string[] {
@@ -78,14 +89,17 @@ export function getResources() {
 	let resources: { [key: string]: string[] } = {
 		src: [
 			'.npmignore',
-			'*.{html,json,md}',
+			'*.{html,md}',
+			'!(tsconfig|tslint).json',
 			'support/**',
 			'types/**',
 			'bin/**'
 		],
 
 		'.': [
-			'{src,tests}/**/*.{css,d.ts,html,json}'
+			'{src,tests}/**/.{css,d.ts,html}',
+			'src/**/*.json',
+			'tests/**/!(tsconfig).json'
 		]
 	};
 
