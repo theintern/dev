@@ -1,11 +1,12 @@
 #!/usr/bin/env node 
 
 import { watch } from 'chokidar';
-import { ChildProcess } from 'child_process';
-import { echo, exec } from 'shelljs';
-import { join } from 'path';
+import { spawn } from 'child_process';
+import { echo } from 'shelljs';
+import { dirname, join } from 'path';
 import { buildDir, copyAll, fixSourceMaps, getConfigs, getResources } from './common';
 import { red } from 'chalk';
+import { readFileSync } from 'fs';
 
 function createCopier(dest: string) {
 	let outDir = join(buildDir, dest);
@@ -29,22 +30,25 @@ Object.keys(resources).forEach(function (dest) {
 	});
 });
 
-getConfigs().forEach(tsconfig => {
-	echo(`## Starting tsc watcher for ${tsconfig}`);
-	const child: ChildProcess = <ChildProcess>exec(`tsc --project "${tsconfig}" --watch`, {
-		async: true,
-		silent: true
-	});
+getConfigs().forEach(tsconfigFile => {
+	const projectDir = dirname(tsconfigFile);
+	echo(`## Starting tsc watcher for ${projectDir}`);
+	const child = spawn('tsc', ['--watch', '--project', projectDir]);
 
-	child.stdout.on('data', (data: string) => {
-		data.split('\n').filter(line => {
+	const tsconfig = JSON.parse(readFileSync(tsconfigFile, { encoding: 'utf8' }));
+
+	child.stdout.on('data', (data: Buffer) => {
+		data.toString('utf8').split('\n').filter(line => {
 			return line !== '';
 		}).forEach(line => {
-			if (/\): error TS/.test(data)) {
+			if (/\): error TS/.test(line)) {
 				line = red(line);
 			}
 			else if (line.indexOf('Compilation complete') !== -1) {
-				fixSourceMaps();
+				if (tsconfig.compilerOptions.inlineSources) {
+					echo(`## Fixing source maps`);
+					fixSourceMaps();
+				}
 			}
 			echo(line);
 		});
