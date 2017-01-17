@@ -91,7 +91,6 @@ export function getResources() {
 			'.npmignore',
 			'*.{html,md}',
 			'!(tsconfig|tslint).json',
-			'support/**',
 			'types/**',
 			'bin/**'
 		],
