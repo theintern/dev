@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
 import { sync as globSync } from 'glob';
 import { basename, dirname, join, normalize } from 'path';
-import { red } from 'chalk';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
 	stdout: string;
@@ -54,9 +53,11 @@ export function exec(command: string, options?: ExecOptions) {
 	}
 	const result = <ExecReturnValue> shellExec(command, options);
 	if (result.code) {
-		echo(red.bold('Error!'));
-		echo(red(result.stderr || result.stdout));
-		process.exit(result.code);
+		let message = result.stderr || result.stdout;
+		if (!message) {
+			message = `"${command}" returned non-zero exit code ${result.code}`;
+		}
+		throw new Error(message);
 	}
 	return result;
 }
