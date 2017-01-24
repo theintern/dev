@@ -41,7 +41,7 @@ getConfigs().forEach(tsconfigFile => {
 		data.toString('utf8').split('\n').filter(line => {
 			return line !== '';
 		}).forEach(line => {
-			if (/\): error TS/.test(line)) {
+			if (/\berror TS\d+:/.test(line)) {
 				line = red(line);
 			}
 			else if (line.indexOf('Compilation complete') !== -1) {
