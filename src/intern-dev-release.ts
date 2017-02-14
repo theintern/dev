@@ -4,7 +4,7 @@ import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
 import * as fs from 'fs';
 import { format } from 'util';
-import { buildDir, exec } from './common';
+import { buildDir, exec, internDev } from './common';
 import { createInterface } from 'readline';
 import { red } from 'chalk';
 
@@ -194,8 +194,8 @@ print('This is an internal release script!\n');
 			throw new Error('Aborted');
 		}
 
-		// Publish the package
-		process.chdir(buildDir);
+		// Publish the package from <rootDir>/<buildDir>/<publishDir> or <rootDir>/<buildDir>/<buildDir>
+		process.chdir(internDev.publishDir || buildDir);
 		exec(`npm publish --tag ${npmTag}`);
 
 		// Update the original repo with the new branch and tag pointers
