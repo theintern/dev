@@ -3,10 +3,9 @@
 import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
 import * as fs from 'fs';
-import * as path from 'path';
-import * as util from 'util';
+import { format } from 'util';
 import { buildDir, exec } from './common';
-import * as readline from 'readline';
+import { createInterface } from 'readline';
 import { red } from 'chalk';
 
 function cleanup() {
@@ -16,7 +15,7 @@ function cleanup() {
 }
 
 function print(...args: any[]) {
-	rl.write(util.format.apply(util, args));
+	rl.write(format(args[0], ...args.slice(1)));
 }
 
 function printUsage() {
@@ -28,7 +27,7 @@ function printUsage() {
 }
 
 async function prompt(...args: any[]) {
-	const question = util.format.apply(util, args);
+	const question = format(args[0], ...args.slice(1));
 	return new Promise<string>(function (resolve) {
 		rl.question(question, resolve);
 	});
@@ -45,7 +44,7 @@ function updatePackageVersion(version: string) {
 }
 
 const args = process.argv.slice(2);
-const rl = readline.createInterface({
+const rl = createInterface({
 	input: process.stdin,
 	output: process.stdout
 });
@@ -55,7 +54,7 @@ if (args[0] === '--help') {
 	process.exit(0);
 }
 
-const rootDir = path.dirname(__dirname);
+const rootDir = process.cwd();
 const branch = args[0] || 'master';
 let pushBranches = [ branch ];
 let npmTag = 'latest';
@@ -140,7 +139,7 @@ print('This is an internal release script!\n');
 		// If the patch digit is a 0, this is a new major/minor release
 		else {
 			// The new branch we'll be making for this major/minor release
-			newBranch = util.format('%s.%s', semver.major(version), semver.minor(version));
+			newBranch = format('%s.%s', semver.major(version), semver.minor(version));
 
 			// The full version of the next release in the new branch
 			branchVersion = semver.inc(version, 'patch') + '-pre';
