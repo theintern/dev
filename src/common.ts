@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
-import { sync as globSync } from 'glob';
+import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize } from 'path';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
@@ -20,18 +20,37 @@ const tsconfig = JSON.parse(readFileSync('tsconfig.json', { encoding: 'utf8' }))
 const buildDir = normalize(tsconfig.compilerOptions.outDir);
 export { buildDir, tsconfig };
 
+export interface FilePattern {
+	base: string;
+	pattern: string;
+}
+
 /**
  * Copy the files denoted by an array of glob patterns into a given directory.
  */
-export function copyAll(patterns: string[], outDir: string) {
-	glob(patterns).forEach(function (filename) {
-		const dst = join(outDir, filename);
-		const dstDir = dirname(dst);
-		if (!test('-d', dstDir)) {
-			mkdir('-p', dstDir);
+export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
+	patterns.forEach(pattern => {
+		let filePattern: string;
+		const options: IOptions = {};
+
+		if (typeof pattern !== 'string') {
+			options.cwd = pattern.base;
+			filePattern = pattern.pattern;
 		}
-		echo(`## Copying ${filename} to ${dst}`);
-		cp(filename, dst);
+		else {
+			options.cwd = '.';
+			filePattern = pattern;
+		}
+
+		glob(filePattern, options).forEach(function (filename) {
+			const dst = join(outDir, filename);
+			const dstDir = dirname(dst);
+			if (!test('-d', dstDir)) {
+				mkdir('-p', dstDir);
+			}
+			echo(`## Copying ${filename} to ${dst}`);
+			cp(join(options.cwd, filename), dst);
+		});
 	});
 }
 
@@ -120,23 +139,20 @@ export function getResources() {
 /**
  * Return all matching files for all patterns.
  */
-export function glob(patterns: string | string[]) {
-	let globIgnore = [ 'node_modules/**', `${buildDir}/**` ];
-	if (internDev && internDev.ignore) {
-		globIgnore = globIgnore.concat(internDev.ignore);
+export function glob(pattern: string, options?: IOptions) {
+	options = options || {};
+
+	if (!('nodir' in options)) {
+		options.nodir = true;
 	}
 
-	if (!Array.isArray(patterns)) {
-		patterns = [ patterns ];
+	if (!('ignore' in options)) {
+		let globIgnore = [ 'node_modules/**', `${buildDir}/**` ];
+		if (internDev && internDev.ignore) {
+			globIgnore = globIgnore.concat(internDev.ignore);
+		}
+		options.ignore = globIgnore;
 	}
 
-	let matches: { [filename: string]: boolean } = {};
-
-	patterns.forEach(function (pattern) {
-		globSync(pattern, { ignore: globIgnore, nodir: true }).forEach(function (filename) {
-			matches[filename] = true;
-		});
-	});
-
-	return Object.keys(matches);
+	return globSync(pattern, options);
 }

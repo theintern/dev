@@ -1,6 +1,6 @@
 #!/usr/bin/env node 
 
-import { echo} from 'shelljs';
+import { echo } from 'shelljs';
 import { join, dirname } from 'path';
 import { buildDir, copyAll, exec, fixSourceMaps, getConfigs, getResources, tsconfig } from './common';
 
