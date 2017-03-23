@@ -117,7 +117,7 @@ export function getResources() {
 
 		'.': [
 			'{src,tests}/**/.{css,d.ts,html}',
-			'src/**/*.json',
+			'src/**/!(tsconfig).json',
 			'tests/**/!(tsconfig).json'
 		]
 	};
