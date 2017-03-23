@@ -1,6 +1,6 @@
 {
   "name": "intern-dev",
-  "version": "0.1.8-pre",
+  "version": "0.1.8",
   "description": "Development support scripts for Intern projects.",
   "repository": {
     "type": "git",
