@@ -114,9 +114,8 @@ export function getResources() {
 			'types/**',
 			'bin/**'
 		],
-
 		'.': [
-			'{src,tests}/**/.{css,d.ts,html}',
+			'{src,tests}/**/*.{css,d.ts,html,js}',
 			'src/**/!(tsconfig).json',
 			'tests/**/!(tsconfig).json'
 		]
