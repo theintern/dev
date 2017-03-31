@@ -1,9 +1,17 @@
 #!/usr/bin/env node 
 
 import { echo, rm } from 'shelljs';
-import { buildDir } from './common';
+import { dirname, join, relative } from 'path';
+import { getConfigs, readJsonFile } from './common';
 
-echo(`## Removing ${buildDir}`);
-rm('-rf', buildDir);
+getConfigs().forEach(configFile => {
+	const config = readJsonFile(configFile);
+	let outDir = config.compilerOptions && config.compilerOptions.outDir;
+	if (outDir) {
+		outDir = relative(process.cwd(), join(dirname(configFile), outDir));
+		echo(`## Removing ${outDir}`);
+		rm('-rf', outDir);
+	}
+});
 
 echo('## Done cleaning');

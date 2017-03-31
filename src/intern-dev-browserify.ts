@@ -2,15 +2,14 @@
 
 import browserify = require('browserify');
 import { echo, mkdir, test } from 'shelljs';
-import { buildDir, internDev } from './common';
-import { dirname, join } from 'path';
+import { internDev } from './common';
+import { dirname } from 'path';
 import { writeFileSync } from 'fs';
 import { red } from 'chalk';
 
 echo('## Browserifying');
 
 function bundle(files: string[], output: string) {
-	files = files.map(file => join(buildDir, file));
 	const b = browserify(files, { debug: true });
 	return new Promise((resolve, reject) => {
 		b.bundle((error, data) => {
@@ -22,7 +21,6 @@ function bundle(files: string[], output: string) {
 			}
 		});
 	}).then(data => {
-		output = join(buildDir, output);
 		const outputDir = dirname(output);
 		if (!test('-d', outputDir)) {
 			mkdir('-p', outputDir);

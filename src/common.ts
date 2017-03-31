@@ -11,11 +11,11 @@ export interface ExecReturnValue extends ExecOutputReturnValue {
 // This script assumes CWD is the project root, which will be the case if the
 // dev scripts are running via NPM
 
-const packageJson = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }));
+const packageJson = readJsonFile('package.json');
 const internDev = packageJson.internDev;
 export { internDev };
 
-const tsconfig = JSON.parse(readFileSync('tsconfig.json', { encoding: 'utf8' }));
+const tsconfig = readJsonFile('tsconfig.json');
 // normalize the buildDir because tsconfig likes './', but glob (used later) does not
 const buildDir = normalize(tsconfig.compilerOptions.outDir);
 export { buildDir, tsconfig };
@@ -106,33 +106,7 @@ export function getConfigs(): string[] {
  * Get the set of non-source code resources that are part of the build.
  */
 export function getResources() {
-	let resources: { [key: string]: string[] } = {
-		src: [
-			'.npmignore',
-			'*.{html,md}',
-			'!(tsconfig|tslint).json',
-			'types/**',
-			'bin/**'
-		],
-		'.': [
-			'{src,tests}/**/*.{css,d.ts,html,js}',
-			'src/**/!(tsconfig).json',
-			'tests/**/!(tsconfig).json'
-		]
-	};
-
-	if (internDev && internDev.resources) {
-		Object.keys(internDev.resources).forEach(function (dest) {
-			if (resources[dest]) {
-				resources[dest] = resources[dest].concat(internDev.resources[dest]);
-			}
-			else {
-				resources[dest] = internDev.resources[dest].slice();
-			}
-		});
-	}
-
-	return resources;
+	return (internDev && internDev.resources) || {};
 }
 
 /**
@@ -154,4 +128,93 @@ export function glob(pattern: string, options?: IOptions) {
 	}
 
 	return globSync(pattern, options);
+}
+
+/**
+ * Parse JSON that may include comments
+ */
+export function parseJson(text: string) {
+	const textToParse = removeComments(text);
+	return JSON.parse(textToParse);
+}
+
+export function readJsonFile(filename: string) {
+	return parseJson(readFileSync(filename, { encoding: 'utf8' }));
+}
+
+function removeComments(text: string): string {
+	let state: 'string' | 'block-comment' | 'line-comment' | 'default' = 'default';
+	let i = 0;
+
+	// Create an array of chars from the text, the blank out anything in a comment
+	const chars = text.split('');
+
+	while (i < chars.length) {
+		switch (state) {
+			case 'block-comment':
+				if (chars[i] === '*' && chars[i + 1] === '/') {
+					chars[i] = ' ';
+					chars[i + 1] = ' ';
+					state = 'default';
+					i += 2;
+				}
+				else if (chars[i] !== '\n') {
+					chars[i] = ' ';
+					i += 1;
+				}
+				else {
+					i += 1;
+				}
+				break;
+
+			case 'line-comment':
+				if (chars[i] === '\n') {
+					state = 'default';
+				}
+				else {
+					chars[i] = ' ';
+				}
+				i += 1;
+				break;
+
+			case 'string':
+				if (chars[i] === '"') {
+					state = 'default';
+					i += 1;
+				}
+				else if (chars[i] === '\\' && chars[i + 1] === '\\') {
+					i += 2;
+				}
+				else if (chars[i] === '\\' && chars[i + 1] === '"') {
+					i += 2;
+				}
+				else {
+					i += 1;
+				}
+				break;
+
+			default:
+				if (chars[i] === '"') {
+					state = 'string';
+					i += 1;
+				}
+				else if (chars[i] === '/' && chars[i + 1] === '*') {
+					chars[i] = ' ';
+					chars[i + 1] = ' ';
+					state = 'block-comment';
+					i += 2;
+				}
+				else if (chars[i] === '/' && chars[i + 1] === '/') {
+					chars[i] = ' ';
+					chars[i + 1] = ' ';
+					state = 'line-comment';
+					i += 2;
+				}
+				else {
+					i += 1;
+				}
+		}
+	}
+
+	return chars.join('');
 }

@@ -1,14 +1,8 @@
 #!/usr/bin/env node 
 
 import { echo } from 'shelljs';
-import { join, dirname } from 'path';
-import { buildDir, copyAll, exec, fixSourceMaps, getConfigs, getResources, tsconfig } from './common';
-
-// Copy resources first in case some of them are needed for builds
-const resources = getResources();
-Object.keys(resources).forEach(function (dest) {
-	copyAll(resources[dest], join(buildDir, dest));
-});
+import { dirname, join } from 'path';
+import { buildDir, copyAll, exec, fixSourceMaps, getConfigs, internDev, tsconfig } from './common';
 
 getConfigs().forEach(function (tsconfig) {
 	echo(`## Compiling ${dirname(tsconfig)}`);
@@ -20,6 +14,19 @@ if (tsconfig.compilerOptions.inlineSources) {
 	// to the source file to be a sibling of the compiled file
 	echo('## Fixing source map paths');
 	fixSourceMaps();
+}
+
+copyAll([
+	'package.json',
+	'README*',
+	'LICENSE*'
+], join(buildDir, 'src'));
+
+if (internDev && internDev.resources) {
+	const resources = internDev.resources;
+	Object.keys(resources).forEach(dest => {
+		copyAll(resources[dest], dest);
+	});
 }
 
 echo('## Done building');
