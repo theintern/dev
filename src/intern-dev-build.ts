@@ -2,11 +2,23 @@
 
 import { echo } from 'shelljs';
 import { dirname, join } from 'path';
+import { red } from 'chalk';
 import { buildDir, copyAll, exec, fixSourceMaps, getConfigs, internDev, tsconfig } from './common';
 
 getConfigs().forEach(function (tsconfig) {
 	echo(`## Compiling ${dirname(tsconfig)}`);
-	exec(`tsc -p "${tsconfig}"`);
+	try {
+		exec(`tsc -p "${tsconfig}"`);
+	}
+	catch (error) {
+		if (error.name === 'ExecError') {
+			echo(red(error.stdout));
+			process.exit(error.code);
+		}
+		else {
+			throw error;
+		}
+	}
 });
 
 if (tsconfig.compilerOptions.inlineSources) {

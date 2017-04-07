@@ -72,11 +72,7 @@ export function exec(command: string, options?: ExecOptions) {
 	}
 	const result = <ExecReturnValue> shellExec(command, options);
 	if (result.code) {
-		let message = result.stderr || result.stdout;
-		if (!message) {
-			message = `"${command}" returned non-zero exit code ${result.code}`;
-		}
-		throw new Error(message);
+		throw new ExecError(command, result.code, result.stdout, result.stderr);
 	}
 	return result;
 }
@@ -142,7 +138,26 @@ export function readJsonFile(filename: string) {
 	return parseJson(readFileSync(filename, { encoding: 'utf8' }));
 }
 
-function removeComments(text: string): string {
+export class ExecError extends Error {
+	code: number;
+	stdout: string;
+	stderr: string;
+
+	constructor(command: string, code: number, stdout: string, stderr: string) {
+		super(`Command "${command}" failed (${code})`);
+		this.name = 'ExecError';
+		this.code = code;
+		this.stdout = getText(stdout);
+		this.stderr = getText(stderr);
+	}
+}
+
+function getText(text: string) {
+	text = text || '';
+	return text.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
+function removeComments(text: string) {
 	let state: 'string' | 'block-comment' | 'line-comment' | 'default' = 'default';
 	let i = 0;
 

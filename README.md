@@ -1,10 +1,11 @@
 # intern-dev
 
-Support scripts for Intern sub-projects
+Support scripts for Intern and its sub-projects
 
 ## Usage
 
-Include this project in `devDependencies` in your Intern component's `package.json`, then add the desired scripts to `scripts` in `package.json`. For example:
+Include this project in `devDependencies` in your Intern component's `package.json`, then add the desired scripts to
+`scripts` in `package.json`. For example:
 
 ```js
 "scripts": {
@@ -19,7 +20,9 @@ Include this project in `devDependencies` in your Intern component's `package.js
 
 ## Configuration
 
-Components should generally try to follow the conventions used by this package (standard tslint, sources in `src`, test config in `tests/intern.js`, etc.), in which case no configuration is required. However, some limited configuration is supported through the `internDev` property in your project's `package.json`.
+Components should generally try to follow the conventions used by this package (standard tslint, sources in `src`, test
+config in `tests/intern.js`, etc.), in which case no configuration is required. However, limited configuration is
+supported through the `internDev` property in your project's `package.json`.
 
 ```js
 "internDev": {
@@ -27,7 +30,11 @@ Components should generally try to follow the conventions used by this package (
 	"ignore": [ "ignore", "glob", "patterns" ],
 	"resources": {
 		// Arrays of patterns to copy for a build, keyed by destination path
-		"dest1": [ "patterns", "to", "copy" ]
+		"_build": [
+			"patterns",
+			{ base: "src/stuff", pattern: "to" },
+			"copy"
+		]
 	},
 	// Path to custom test config
 	"testConfig": "tests/custom.config.js"

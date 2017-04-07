@@ -31,7 +31,17 @@ function run(runner: string) {
 	}
 
 	echo('## Running tests');
-	exec(`${command.join(' ')}`, { silent: false });
+	try {
+		exec(`${command.join(' ')}`, { silent: false });
+	}
+	catch (error) {
+		if (error.name === 'ExecError') {
+			process.exitCode = 1;
+		}
+		else {
+			throw error;
+		}
+	}
 	echo('## Done testing');
 }
 
