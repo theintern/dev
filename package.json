@@ -7,6 +7,10 @@
     "url": "https://github.com/theintern/intern-dev.git"
   },
   "license": "BSD-3-Clause",
+  "files": [
+    "*.js",
+    "*.d.ts"
+  ],
   "dependencies": {
     "chalk": "~1.1.3",
     "chokidar": "~1.6.0",
