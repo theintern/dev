@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+/**
+ * This script creates and publishes new release of a project. The basic process is:
+ *
+ *   1. Create a temporary clone of the repo. All work will be done from the clone.
+ *   2. Update the source for the version being released, commit, and tag.
+ *   3. Update the source for the new version, and commit that.
+ *   4. Checkout the tagged version.
+ *   5. Build it.
+ *   6. Give the user a chance to review, then publish
+ *   7. Push the new commits and tag back to the original repo.
+ */
+
 import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
 import { readFileSync, writeFileSync } from 'fs';
@@ -19,11 +31,13 @@ function print(...args: any[]) {
 }
 
 function printUsage() {
-	print('Usage: %s [--help] [branch [version]]\n', process.argv[1]);
+	print(`Usage: intern-dev-release [help] [branch [version]]\n`);
 	print('\n');
-	print('<branch> defaults to "master".\n');
-	print('<version> is the version to release, and defaults to what is listed in the\n');
-	print('  package.json in the branch. It should only be specified for pre-releases\n');
+	print(`  help      Displays this message\n`);
+	print(`  branch    Branch to release; defaults to the current branch.\n`);
+	print(`  version   Version to release; defaults to what is listed in the\n`);
+	print(`            package.json in the branch. It should only be specified\n`);
+	print(`            for pre-releases\n`);
 }
 
 async function prompt(...args: any[]) {
@@ -49,13 +63,13 @@ const rl = createInterface({
 	output: process.stdout
 });
 
-if (args[0] === '--help') {
+if (args[0] === 'help') {
 	printUsage();
 	process.exit(0);
 }
 
 const rootDir = process.cwd();
-const branch = args[0] || 'master';
+const branch = args[0] || exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
 let pushBranches = [ branch ];
 let npmTag = 'latest';
 let exitCode = 0;
@@ -74,22 +88,38 @@ if (args[1]) {
 	npmTag = 'beta';
 }
 
-print('This is an internal release script!\n');
-
 (async function main() {
 	try {
+		if (branch !== 'master') {
+			let question = `Are you sure you want to create a release from branch ${branch}?\n` +
+				`Enter "y" to continue, any other key to abort.\n` +
+				'> ';
+
+			if (await prompt(question) !== 'y') {
+				throw new Error('Aborted');
+			}
+		}
+
 		const output = exec('git config receive.denyCurrentBranch').stdout;
 		if (output.indexOf('updateInstead') !== 0) {
 			throw new Error('Repository should have receive.denyCurrentBranch set to "updateInstead"');
 		}
 
-		let question = 'Enter "y" to create a new release from branch ' + branch +
-			(version ? (' with version override ' + version) : '.') +
-			'\n(You can abort pushing upstream later on if something goes wrong.)\n';
-
-		if (await prompt(question) !== 'y') {
-			throw new Error('Aborted');
+		const currentBranch = exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
+		if (branch === currentBranch) {
+			try {
+				exec('git diff-index --quiet HEAD');
+			}
+			catch (error) {
+				throw new Error('Branch has uncommitted changes. Please commit and try again.');
+			}
 		}
+
+		print(`Creating a new release from branch ${branch}`);
+		if (version) {
+			print(` with version override ${version}`);
+		}
+		print('.\n');
 
 		// Create a package build directory and clone this repo into it
 		process.chdir(rootDir);
@@ -101,7 +131,7 @@ print('This is an internal release script!\n');
 
 		// Cd into the build dir and checkout the branch that's being released
 		process.chdir(buildDir);
-		print('\nBuilding branch "%s"...\n', branch);
+		print(`\nBuilding branch "${branch}"...\n`);
 		exec(`git checkout ${branch}`);
 
 		// Load package JSON from the build directory
@@ -139,7 +169,7 @@ print('This is an internal release script!\n');
 		// If the patch digit is a 0, this is a new major/minor release
 		else {
 			// The new branch we'll be making for this major/minor release
-			newBranch = format('%s.%s', semver.major(version), semver.minor(version));
+			newBranch = `${semver.major(version)}.${semver.minor(version)}`;
 
 			// The full version of the next release in the new branch
 			branchVersion = semver.inc(version, 'patch') + '-pre';
@@ -165,7 +195,7 @@ print('This is an internal release script!\n');
 
 		// If this is a major/minor release, we also create a new branch for it
 		if (newBranch) {
-			print('Creating new branch %s...\n', newBranch);
+			print(`Creating new branch ${newBranch}...\n`);
 			// Create the new branch starting at the tagged release version
 			exec(`git checkout -b ${newBranch} ${version}`);
 
@@ -178,24 +208,28 @@ print('This is an internal release script!\n');
 		}
 
 		// Checkout and build the new release in preparation for publishing
-		print('Checking out and building %s...\n', version);
+		print(`Checking out and building ${version}...\n`);
 		exec(`git checkout ${version}`);
 		exec('npm install');
-		exec('npm run build dist');
+		exec('npm run build');
 
 		// Give the user a chance to verify everything is good before making any updates
 		print('\nDone!\n\n');
 
-		question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +
-			npmTag + ', push tags ' + version + ', and upload. Enter any other key to bail.\n' +
+		const publishDir = (internDev && internDev.publishDir) || buildDir;
+		print(`Package to be published from ${publishDir}.\n\n`);
+
+		let question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +
+			`${npmTag}, push tags ${version}, and upload. Enter any other key to bail.\n` +
 			'> ';
 
 		if (await prompt(question) !== 'y') {
+			print('Not publishing\n');
 			throw new Error('Aborted');
 		}
 
 		// Publish the package from <rootDir>/<buildDir>/<publishDir> or <rootDir>/<buildDir>/<buildDir>
-		process.chdir(internDev.publishDir || buildDir);
+		process.chdir(publishDir);
 		exec(`npm publish --tag ${npmTag}`);
 
 		// Update the original repo with the new branch and tag pointers
