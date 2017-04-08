@@ -9,7 +9,18 @@ let configFile = test('-f', 'tslint.json') ? 'tslint.json' : resolve(join(__dirn
 
 glob('**/tsconfig.json').forEach(function (tsconfig) {
 	echo(`## Linting ${dirname(tsconfig)}`);
-	exec(`tslint -c "${configFile}" --project "${tsconfig}"`);
+	try {
+		exec(`tslint -c "${configFile}" --project "${tsconfig}"`);
+	}
+	catch (error) {
+		if (error.name === 'ExecError') {
+			echo(error.stdout);
+			process.exitCode = error.code;
+		}
+		else {
+			throw error;
+		}
+	}
 });
 
 echo('## Done linting');
