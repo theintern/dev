@@ -149,7 +149,7 @@ if (args[1]) {
 			version = semver.major(version) + '.' + semver.minor(version) + '.' + semver.patch(version);
 		}
 		else {
-			if (semver.gte(version, packageJson.version)) {
+			if (semver.gte(packageJson.version, version)) {
 				throw new Error('Provided version must be >= current version');
 			}
 		}
