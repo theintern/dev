@@ -2,6 +2,10 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "lib": [
+      "es5",
+      "es2015.promise"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
