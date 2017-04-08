@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
-import { basename, dirname, join, normalize } from 'path';
+import { basename, dirname, join, normalize, resolve } from 'path';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
 	stdout: string;
@@ -23,6 +23,13 @@ export { buildDir, tsconfig };
 export interface FilePattern {
 	base: string;
 	pattern: string;
+}
+
+/**
+ * Compile a project
+ */
+export function compile(tsconfig: string) {
+	return exec(`tsc -p "${tsconfig}"`);
 }
 
 /**
@@ -124,6 +131,15 @@ export function glob(pattern: string, options?: IOptions) {
 	}
 
 	return globSync(pattern, options);
+}
+
+/**
+ * Lint a project
+ */
+export function lint(tsconfigFile: string) {
+	// Use the tslint file from this project if the project doesn't have one of its own
+	let tslintJson = test('-f', 'tslint.json') ? 'tslint.json' : resolve(join(__dirname, 'tslint.json'));
+	return exec(`tslint -c "${tslintJson}" --project "${tsconfigFile}"`);
 }
 
 /**

@@ -3,12 +3,15 @@
 import { echo } from 'shelljs';
 import { dirname, join } from 'path';
 import { red } from 'chalk';
-import { buildDir, copyAll, exec, fixSourceMaps, getConfigs, internDev, tsconfig } from './common';
+import { buildDir, compile, copyAll, fixSourceMaps, getConfigs, internDev, lint, tsconfig } from './common';
 
 getConfigs().forEach(function (tsconfig) {
-	echo(`## Compiling ${dirname(tsconfig)}`);
 	try {
-		exec(`tsc -p "${tsconfig}"`);
+		echo(`## Linting ${dirname(tsconfig)}`);
+		lint(tsconfig);
+
+		echo(`## Compiling ${dirname(tsconfig)}`);
+		compile(tsconfig);
 	}
 	catch (error) {
 		if (error.name === 'ExecError') {
