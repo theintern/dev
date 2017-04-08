@@ -9,14 +9,17 @@
   "license": "BSD-3-Clause",
   "files": [
     "*.js",
-    "*.d.ts"
+    "*.d.ts",
+    "*.json"
   ],
   "dependencies": {
     "chalk": "~1.1.3",
     "chokidar": "~1.6.0",
     "glob": "~7.1.1",
     "semver": "~5.3.0",
-    "shelljs": "~0.7.0"
+    "shelljs": "~0.7.0",
+    "tslint": "~5.0.0",
+    "typescript": "~2.2.0"
   },
   "devDependencies": {
     "@types/browserify": "~12.0.30",
@@ -26,13 +29,7 @@
     "@types/semver": "~5.3.30",
     "@types/shelljs": "~0.7.0",
     "@types/node": "~7.0.0",
-    "ts-node": "~3.0.0",
-    "tslint": "~5.0.0",
-    "typescript": "~2.2.0"
-  },
-  "peerDependencies": {
-    "tslint": "~5.0.0",
-    "typescript": "~2.2.0"
+    "ts-node": "~3.0.0"
   },
   "bugs": "https://github.com/theintern/intern-dev/issues",
   "keywords": [
@@ -55,6 +52,11 @@
     "lint": "ts-node ./src/intern-dev-lint.ts"
   },
   "internDev": {
-    "publishDir": "_build/src"
+    "publishDir": "_build/src",
+    "resources": {
+      "_build/src": [
+        "tslint.json"
+      ]
+    }
   }
 }
