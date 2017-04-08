@@ -1,4 +1,4 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
 import { watch } from 'chokidar';
 import { spawn } from 'child_process';
@@ -25,8 +25,8 @@ Object.keys(resources).forEach(function (dest) {
 		watcher.on('add', scheduleCopy);
 		watcher.on('change', scheduleCopy);
 		watcher.on('unlink', scheduleCopy);
-	}).on('error', function (error) {
-		echo('Watcher error:', error);
+	}).on('error', (error: Error) => {
+		echo('Watcher error', error.toString());
 	});
 });
 

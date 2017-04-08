@@ -1,4 +1,4 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
 import browserify = require('browserify');
 import { echo, mkdir, test } from 'shelljs';

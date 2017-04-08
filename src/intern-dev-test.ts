@@ -1,4 +1,4 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
 import { echo } from 'shelljs';
 import { join } from 'path';

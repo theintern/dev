@@ -6,7 +6,7 @@ import { basename, dirname, join, normalize } from 'path';
 export interface ExecReturnValue extends ExecOutputReturnValue {
 	stdout: string;
 	stderr: string;
-};
+}
 
 // This script assumes CWD is the project root, which will be the case if the
 // dev scripts are running via NPM

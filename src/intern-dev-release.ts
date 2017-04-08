@@ -1,8 +1,8 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
 import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
-import * as fs from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { format } from 'util';
 import { buildDir, exec, internDev } from './common';
 import { createInterface } from 'readline';
@@ -34,13 +34,13 @@ async function prompt(...args: any[]) {
 }
 
 function loadPackageJson() {
-	return JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }));
+	return JSON.parse(readFileSync('package.json', { encoding: 'utf8' }));
 }
 
 function updatePackageVersion(version: string) {
 	const packageJson = loadPackageJson();
 	packageJson.version = version;
-	fs.writeFileSync('package.json', JSON.stringify(packageJson, null, '  '));
+	writeFileSync('package.json', JSON.stringify(packageJson, null, '  '));
 }
 
 const args = process.argv.slice(2);

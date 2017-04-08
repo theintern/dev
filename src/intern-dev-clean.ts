@@ -1,4 +1,4 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
 import { echo, rm } from 'shelljs';
 import { dirname, join, relative } from 'path';
