@@ -14,9 +14,10 @@
 
 import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { format } from 'util';
 import { buildDir, exec, internDev } from './common';
+import { join } from 'path';
 import { createInterface } from 'readline';
 import { red } from 'chalk';
 
@@ -273,7 +274,14 @@ if (!npmTag) {
 		// Give the user a chance to verify everything is good before making any updates
 		print('\nDone!\n\n');
 
-		const publishDir = (internDev && internDev.publishDir) || buildDir;
+		let publishDir = internDev && internDev.publishDir;
+		if (!publishDir) {
+			publishDir = buildDir;
+			if (existsSync(join(buildDir, 'src'))) {
+				publishDir = join(buildDir, 'src');
+			}
+		}
+
 		print(`Package to be published from ${tmpDir}/${publishDir}.\n\n`);
 
 		let question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +

@@ -52,7 +52,6 @@
     "lint": "ts-node ./src/intern-dev-lint.ts"
   },
   "internDev": {
-    "publishDir": "_build/src",
     "resources": {
       "_build/src": [
         "tslint.json"
