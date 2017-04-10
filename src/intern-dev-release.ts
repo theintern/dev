@@ -189,7 +189,6 @@ if (!npmTag) {
 				version += `-${preTag}`;
 
 				const tagLines = exec('git show-ref --tags --abbrev').stdout.replace(/\s+$/, '').split('\n');
-				console.log(tagLines);
 				const tags = tagLines.map(line => /refs\/tags\/(.*)/.exec(line)[1]);
 				const sameVersionTags = tags.filter(tag => {
 					return semver.major(tag) === semver.major(version) &&
