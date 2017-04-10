@@ -23,7 +23,7 @@ import { red } from 'chalk';
 function cleanup() {
 	print('\nCleaning up...\n');
 	process.chdir(rootDir);
-	rm('-rf', buildDir);
+	rm('-rf', tmpDir);
 }
 
 function print(...args: any[]) {
@@ -110,6 +110,7 @@ process.argv.slice(2).forEach(arg => {
 });
 
 const rootDir = process.cwd();
+const tmpDir = '_publish';
 let exitCode = 0;
 let pushBranches = [branch];
 
@@ -159,14 +160,14 @@ if (!npmTag) {
 
 		// Create a package build directory and clone this repo into it
 		process.chdir(rootDir);
-		if (test('-d', buildDir)) {
-			throw new Error('Existing build directory detected at ' + buildDir);
+		if (test('-d', tmpDir)) {
+			cleanup();
 		}
-		mkdir(buildDir);
-		exec(`git clone --recursive . ${buildDir}`);
+		mkdir(tmpDir);
+		exec(`git clone --recursive . ${tmpDir}`);
 
 		// Cd into the build dir and checkout the branch that's being released
-		process.chdir(buildDir);
+		process.chdir(tmpDir);
 		print(`\nBuilding branch "${branch}"...\n`);
 		exec(`git checkout ${branch}`);
 
@@ -274,7 +275,7 @@ if (!npmTag) {
 		print('\nDone!\n\n');
 
 		const publishDir = (internDev && internDev.publishDir) || buildDir;
-		print(`Package to be published from ${publishDir}.\n\n`);
+		print(`Package to be published from ${tmpDir}/${publishDir}.\n\n`);
 
 		let question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +
 			`'${npmTag}', push tag '${version}', and upload. Enter any other key to bail.\n` +
@@ -285,7 +286,7 @@ if (!npmTag) {
 			throw new Error('Aborted');
 		}
 
-		// Publish the package from <rootDir>/<buildDir>/<publishDir> or <rootDir>/<buildDir>/<buildDir>
+		// Publish the package from <rootDir>/<tmpDir>/<publishDir> or <rootDir>/<tmpDir>/<buildDir>
 		process.chdir(publishDir);
 		exec(`npm publish --tag ${npmTag}`);
 
