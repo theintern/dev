@@ -189,6 +189,7 @@ if (!npmTag) {
 			if (preTag) {
 				version += `-${preTag}`;
 
+				// Get all the x.y.z-preTag.w versions
 				const tagLines = exec('git show-ref --tags --abbrev').stdout.replace(/\s+$/, '').split('\n');
 				const tags = tagLines.map(line => /refs\/tags\/(.*)/.exec(line)[1]);
 				const sameVersionTags = tags.filter(tag => {
@@ -200,10 +201,11 @@ if (!npmTag) {
 				sameVersionTags.sort((a, b) => {
 					const preA = Number(semver.prerelease(a)[1]);
 					const preB = Number(semver.prerelease(b)[1]);
-					return preA - preB;
+					return preB - preA;
 				});
 
-				version = semver.inc(version, 'prerelease', <any>preTag);
+				// Increment the latest x.y.z-preTag.w version _or_ the current version
+				version = semver.inc(sameVersionTags[0] || version, 'prerelease', <any>preTag);
 			}
 		}
 		else {
