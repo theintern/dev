@@ -193,10 +193,15 @@ if (!npmTag) {
 				const tagLines = exec('git show-ref --tags --abbrev').stdout.replace(/\s+$/, '').split('\n');
 				const tags = tagLines.map(line => /refs\/tags\/(.*)/.exec(line)[1]);
 				const sameVersionTags = tags.filter(tag => {
-					return semver.major(tag) === semver.major(version) &&
-						semver.minor(tag) === semver.minor(version) &&
-						semver.patch(tag) === semver.patch(version) &&
-						semver.prerelease(tag)[0] === preTag;
+					try {
+						return semver.major(tag) === semver.major(version) &&
+							semver.minor(tag) === semver.minor(version) &&
+							semver.patch(tag) === semver.patch(version) &&
+							semver.prerelease(tag)[0] === preTag;
+					}
+					catch (error) {
+						return false;
+					}
 				});
 				sameVersionTags.sort((a, b) => {
 					const preA = Number(semver.prerelease(a)[1]);
