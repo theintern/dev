@@ -19,6 +19,12 @@
     "sourceMap": false,
     "target": "ES5"
   },
+  "formatCodeOptions": {
+    "convertTabsToSpaces": false,
+    "insertSpaceAfterCommaDelimiter": true,
+    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+    "insertSpaceAfterSemicolonInForStatements": true
+  },
   "include": [
     "./src/**/*.ts"
   ]

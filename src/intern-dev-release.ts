@@ -31,13 +31,15 @@ function print(...args: any[]) {
 }
 
 function printUsage() {
-	print(`Usage: intern-dev-release [help] [branch [version]]\n`);
+	print(`Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n`);
 	print('\n');
-	print(`  help      Displays this message\n`);
-	print(`  branch    Branch to release; defaults to the current branch.\n`);
-	print(`  version   Version to release; defaults to what is listed in the\n`);
-	print(`            package.json in the branch. It should only be specified\n`);
-	print(`            for pre-releases\n`);
+	print(`  help        Displays this message\n`);
+	print(`  branch      Branch to release; defaults to the current branch.\n`);
+	print(`  version     Version to release; defaults to what is listed in the\n`);
+	print(`              package.json in the branch. It should only be specified\n`);
+	print(`              for pre-releases\n`);
+	print(`  prerelease  A prerelease tag to attach to the version, like 'alpha'\n`);
+	print(`              or 'beta'.\n`);
 }
 
 async function prompt(...args: any[]) {
@@ -57,35 +59,69 @@ function updatePackageVersion(version: string) {
 	writeFileSync('package.json', JSON.stringify(packageJson, null, '  '));
 }
 
-const args = process.argv.slice(2);
 const rl = createInterface({
 	input: process.stdin,
 	output: process.stdout
 });
 
-if (args[0] === 'help') {
-	printUsage();
-	process.exit(0);
-}
-
-const rootDir = process.cwd();
-const branch = args[0] || exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
-let pushBranches = [ branch ];
-let npmTag = 'latest';
-let exitCode = 0;
-
+let branch = exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
 // the version to be released
 let version: string;
+// the tag that will be applied to the package in the npm registry
+let npmTag: string;
 // the next pre-release version that will be set on the original branch after tagging
 let preVersion: string;
+// a prerelease tag to attach to the version
+let preTag: string;
 // the name of the new release branch that should be created if this is not a patch release
 let newBranch: string;
 // the pre-release version that will be set on the minor release branch
 let branchVersion: string;
 
-if (args[1]) {
-	version = args[1];
-	npmTag = 'beta';
+process.argv.slice(2).forEach(arg => {
+	if (arg === 'help') {
+		printUsage();
+		process.exit(0);
+	}
+
+	const [key, value] = arg.split('=', 2);
+	switch (key) {
+		case 'b':
+			branch = value;
+			break;
+
+		case 'v':
+			version = value;
+			break;
+
+		case 't':
+			npmTag = value;
+			break;
+
+		case 'p':
+			preTag = value;
+			break;
+
+		default:
+			print(`Invalid argument "${arg}"\n\n`);
+			printUsage();
+			process.exit(1);
+	}
+});
+
+const rootDir = process.cwd();
+let exitCode = 0;
+let pushBranches = [branch];
+
+if (!npmTag) {
+	if (preTag || version) {
+		// If a prerelease tag or custom version were specified, this will be the 'next' version
+		npmTag = 'next';
+	}
+	else {
+		// If a custom version wasn't specified, this will be the latest version
+		npmTag = 'latest';
+	}
 }
 
 (async function main() {
@@ -111,7 +147,7 @@ if (args[1]) {
 				exec('git diff-index --quiet HEAD');
 			}
 			catch (error) {
-				throw new Error('Branch has uncommitted changes. Please commit and try again.');
+				print(red('Warning: You have uncommitted changes.\n'));
 			}
 		}
 
@@ -146,7 +182,28 @@ if (args[1]) {
 				throw new Error('Releases may only be generated from pre-release versions');
 			}
 
-			version = semver.major(version) + '.' + semver.minor(version) + '.' + semver.patch(version);
+			version = `${semver.major(version)}.${semver.minor(version)}.${semver.patch(version)}`;
+
+			if (preTag) {
+				version += `-${preTag}`;
+
+				const tagLines = exec('git show-ref --tags --abbrev').stdout.replace(/\s+$/, '').split('\n');
+				console.log(tagLines);
+				const tags = tagLines.map(line => /refs\/tags\/(.*)/.exec(line)[1]);
+				const sameVersionTags = tags.filter(tag => {
+					return semver.major(tag) === semver.major(version) &&
+						semver.minor(tag) === semver.minor(version) &&
+						semver.patch(tag) === semver.patch(version) &&
+						semver.prerelease(tag)[0] === preTag;
+				});
+				sameVersionTags.sort((a, b) => {
+					const preA = Number(semver.prerelease(a)[1]);
+					const preB = Number(semver.prerelease(b)[1]);
+					return preA - preB;
+				});
+
+				version = semver.inc(version, 'prerelease', <any>preTag);
+			}
 		}
 		else {
 			if (semver.gte(packageJson.version, version)) {
@@ -220,7 +277,7 @@ if (args[1]) {
 		print(`Package to be published from ${publishDir}.\n\n`);
 
 		let question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +
-			`${npmTag}, push tags ${version}, and upload. Enter any other key to bail.\n` +
+			`'${npmTag}', push tag '${version}', and upload. Enter any other key to bail.\n` +
 			'> ';
 
 		if (await prompt(question) !== 'y') {
@@ -243,7 +300,7 @@ if (args[1]) {
 	catch (error) {
 		if (error.message !== 'Aborted') {
 			// Something broke -- display an error
-			print(`${red(error)}\n`);
+			print(`${red(error.stack)}\n`);
 			print('Aborted.\n');
 			exitCode = 1;
 		}
