@@ -221,7 +221,7 @@ if (!npmTag) {
 		});
 
 		// Pre-release or non-branching updates
-		if (semver.major(version) === 0 || semver.patch(version) !== 0) {
+		if (semver.major(version) === 0 || semver.patch(version) !== 0 || semver.prerelease(version)) {
 			preVersion = semver.inc(version, 'patch') + '-pre';
 		}
 		// If the patch digit is a 0, this is a new major/minor release
