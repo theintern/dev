@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-/**
- * This script creates and publishes new release of a project. The basic process is:
- *
- *   1. Create a temporary clone of the repo. All work will be done from the clone.
- *   2. Update the source for the version being released, commit, and tag.
- *   3. Update the source for the new version, and commit that.
- *   4. Checkout the tagged version.
- *   5. Build it.
- *   6. Give the user a chance to review, then publish
- *   7. Push the new commits and tag back to the original repo.
- */
+//
+// This script creates and publishes new release of a project. The basic process is:
+//
+//   1. Create a temporary clone of the repo. All work will be done from the clone.
+//   2. Update the source for the version being released, commit, and tag.
+//   3. Update the source for the new version, and commit that.
+//   4. Checkout the tagged version.
+//   5. Build it.
+//   6. Give the user a chance to review, then publish
+//   7. Push the new commits and tag back to the original repo.
+//
 
 import { mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
