@@ -36,13 +36,11 @@
   ],
   "homepage": "http://gitub.com/theintern/intern-dev",
   "bin": {
-    "intern-dev-browserify": "./intern-dev-browserify.js",
     "intern-dev-build": "./intern-dev-build.js",
     "intern-dev-clean": "./intern-dev-clean.js",
     "intern-dev-lint": "./intern-dev-lint.js",
     "intern-dev-release": "./intern-dev-release.js",
-    "intern-dev-test": "./intern-dev-test.js",
-    "intern-dev-watch": "./intern-dev-watch.js"
+    "intern-dev-test": "./intern-dev-test.js"
   },
   "scripts": {
     "build": "npm run clean && ts-node ./src/intern-dev-build.ts",
