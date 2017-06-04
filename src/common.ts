@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import { ChildProcess } from 'child_process';
 import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize, resolve } from 'path';
@@ -12,7 +13,7 @@ export interface ExecReturnValue extends ExecOutputReturnValue {
 // dev scripts are running via NPM
 
 const packageJson = readJsonFile('package.json');
-const internDev = packageJson.internDev;
+const internDev = packageJson.internDev || {};
 export { internDev };
 
 const tsconfig = readJsonFile('tsconfig.json');
@@ -28,8 +29,14 @@ export interface FilePattern {
 /**
  * Compile a project
  */
-export function compile(tsconfig: string) {
-	return exec(`tsc -p "${tsconfig}"`);
+export function compile(tsconfig: string, watch = false): ExecOutputReturnValue | ChildProcess {
+	let cmd = `tsc -p "${tsconfig}"`;
+	let opts: ExecOptions = {};
+	if (watch) {
+		cmd += ' --watch';
+		opts.async = true;
+	}
+	return exec(cmd, opts);
 }
 
 /**
@@ -55,7 +62,7 @@ export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
 			if (!test('-d', dstDir)) {
 				mkdir('-p', dstDir);
 			}
-			echo(`## Copying ${filename} to ${dst}`);
+			log(`Copying ${filename} to ${dst}`);
 			cp(join(options.cwd, filename), dst);
 		});
 	});
@@ -143,6 +150,13 @@ export function lint(tsconfigFile: string) {
 }
 
 /**
+ * Log a message to the console
+ */
+export function log(...args: any[]) {
+	echo(`${new Date().toLocaleTimeString()} -`, ...args);
+}
+
+/**
  * Parse JSON that may include comments
  */
 export function parseJson(text: string) {
@@ -152,6 +166,32 @@ export function parseJson(text: string) {
 
 export function readJsonFile(filename: string) {
 	return parseJson(readFileSync(filename, { encoding: 'utf8' }));
+}
+
+/**
+ * Run stylus
+ */
+export function stylus(files: string[], watch = false): ExecReturnValue | ChildProcess {
+	let cmd = `stylus '${files.join('\',\'')}'`;
+	let opts: ExecOptions = {};
+	if (watch) {
+		cmd += ' --watch';
+		opts.async = true;
+	}
+	return exec(cmd, opts);
+}
+
+/**
+ * Run webpack
+ */
+export function webpack(config: string, watch = false): ExecReturnValue | ChildProcess {
+	let cmd = `webpack --config "${config}"`;
+	let opts: ExecOptions = {};
+	if (watch) {
+		cmd += ' --watch';
+		opts.async = true;
+	}
+	return exec(cmd, opts);
 }
 
 export class ExecError extends Error {
