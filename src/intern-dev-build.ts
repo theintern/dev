@@ -44,6 +44,20 @@ getConfigs().forEach(tsconfig => {
 });
 
 // -----------------------------------------------------------------
+// Stylus
+// -----------------------------------------------------------------
+if (internDev.stylus) {
+	if (watchMode) {
+		const proc = spawn('stylus', internDev.stylus.concat('--watch'));
+		watchProcess('stylus', proc);
+	}
+	else {
+		const proc = spawnSync('stylus', internDev.stylus);
+		logProcess('stylus', proc);
+	}
+}
+
+// -----------------------------------------------------------------
 // Resources
 // -----------------------------------------------------------------
 const buildDst = join(buildDir, 'src');
@@ -72,20 +86,6 @@ if (existsSync(webpackConfig)) {
 	else {
 		const proc = spawnSync('webpack', ['--config', webpackConfig]);
 		logProcess('webpack', proc, /^ERROR\b/);
-	}
-}
-
-// -----------------------------------------------------------------
-// Stylus
-// -----------------------------------------------------------------
-if (internDev.stylus) {
-	if (watchMode) {
-		const proc = spawn('stylus', internDev.stylus.concat('--watch'));
-		watchProcess('stylus', proc);
-	}
-	else {
-		const proc = spawnSync('stylus', internDev.stylus);
-		logProcess('stylus', proc);
 	}
 }
 
