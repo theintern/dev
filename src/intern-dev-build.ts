@@ -27,33 +27,43 @@ const watchMode = args[0] === 'watch';
 // -----------------------------------------------------------------
 // Typescript
 // -----------------------------------------------------------------
-getConfigs().forEach(tsconfig => {
-	log(`Linting ${dirname(tsconfig)}`);
-	lint(tsconfig);
+try {
+	getConfigs().forEach(tsconfig => {
+		log(`Linting ${dirname(tsconfig)}`);
+		lint(tsconfig);
 
-	log(`Compiling ${dirname(tsconfig)}`);
-	const tag = `tsc:${dirname(tsconfig)}`;
-	if (watchMode) {
-		const proc = spawn('tsc', ['-p', tsconfig, '--watch']);
-		watchProcess(tag, proc, /\berror TS\d+:/);
-	}
-	else {
-		const proc = spawnSync('tsc', ['-p', tsconfig]);
-		logProcess(tag, proc, /\berror TS\d+:/);
-	}
-});
+		log(`Compiling ${dirname(tsconfig)}`);
+		const tag = `tsc:${dirname(tsconfig)}`;
+		if (watchMode) {
+			const proc = spawn('tsc', ['-p', tsconfig, '--watch']);
+			watchProcess(tag, proc, /\berror TS\d+:/);
+		}
+		else {
+			const proc = spawnSync('tsc', ['-p', tsconfig]);
+			logProcess(tag, proc, /\berror TS\d+:/);
+		}
+	});
+}
+catch (error) {
+	handleError(error);
+}
 
 // -----------------------------------------------------------------
 // Stylus
 // -----------------------------------------------------------------
 if (internDev.stylus) {
-	if (watchMode) {
-		const proc = spawn('stylus', internDev.stylus.concat('--watch'));
-		watchProcess('stylus', proc);
+	try {
+		if (watchMode) {
+			const proc = spawn('stylus', internDev.stylus.concat('--watch'));
+			watchProcess('stylus', proc);
+		}
+		else {
+			const proc = spawnSync('stylus', internDev.stylus);
+			logProcess('stylus', proc);
+		}
 	}
-	else {
-		const proc = spawnSync('stylus', internDev.stylus);
-		logProcess('stylus', proc);
+	catch (error) {
+		handleError(error);
 	}
 }
 
@@ -67,25 +77,35 @@ resources[buildDst] = (resources[buildDst] || []).concat([
 	'README*',
 	'LICENSE*'
 ]);
-Object.keys(resources).forEach(dest => {
-	copyAll(resources[dest], dest);
-	if (watchMode) {
-		createFileWatcher(resources[dest], dest);
-	}
-});
+try {
+	Object.keys(resources).forEach(dest => {
+		copyAll(resources[dest], dest);
+		if (watchMode) {
+			createFileWatcher(resources[dest], dest);
+		}
+	});
+}
+catch (error) {
+	handleError(error);
+}
 
 // -----------------------------------------------------------------
 // Webpack
 // -----------------------------------------------------------------
 const webpackConfig = internDev.webpack || 'webpack.config.js';
 if (existsSync(webpackConfig)) {
-	if (watchMode) {
-		const proc = spawn('webpack', ['--config', webpackConfig, '--watch']);
-		watchProcess('webpack', proc, /^ERROR\b/);
+	try {
+		if (watchMode) {
+			const proc = spawn('webpack', ['--config', webpackConfig, '--watch']);
+			watchProcess('webpack', proc, /^ERROR\b/);
+		}
+		else {
+			const proc = spawnSync('webpack', ['--config', webpackConfig]);
+			logProcess('webpack', proc, /^ERROR\b/);
+		}
 	}
-	else {
-		const proc = spawnSync('webpack', ['--config', webpackConfig]);
-		logProcess('webpack', proc, /^ERROR\b/);
+	catch (error) {
+		handleError(error);
 	}
 }
 
@@ -123,6 +143,16 @@ function copy(file: string, dstDir: string | string[]) {
 		cp(file, dir);
 		log(`Copied ${file} -> ${dir}`);
 	});
+}
+
+function handleError(error: Error) {
+	if (error.name === 'ExecError') {
+		log(red(((<any>error).stdout)));
+		process.exit((<any>error).code);
+	}
+	else {
+		throw error;
+	}
 }
 
 function logProcess(name: string, proc: SpawnSyncReturns<Buffer|string>, errorTest?: RegExp) {
