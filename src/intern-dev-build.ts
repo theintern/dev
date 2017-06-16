@@ -11,7 +11,7 @@ import { watch, FSWatcher } from 'chokidar';
 import { dirname, join } from 'path';
 import { red } from 'chalk';
 import { cp, mkdir, rm } from 'shelljs';
-import { existsSync } from 'fs';
+import { sync as glob } from 'glob';
 import {
 	buildDir,
 	copyAll,
@@ -92,8 +92,8 @@ catch (error) {
 // -----------------------------------------------------------------
 // Webpack
 // -----------------------------------------------------------------
-const webpackConfig = internDev.webpack || 'webpack.config.js';
-if (existsSync(webpackConfig)) {
+const webpackConfig = glob(internDev.webpack || 'webpack.config.*')[0];
+if (webpackConfig) {
 	try {
 		if (watchMode) {
 			const proc = spawn('webpack', ['--config', webpackConfig, '--watch']);
