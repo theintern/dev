@@ -177,7 +177,7 @@ function logProcessOutput(name: string, text: string | Buffer, errorTest?: RegEx
 	let lines = text.split('\n')
 		.filter(line => !(/^\s*$/.test(line)))
 		.filter(line => !(/^Child$/.test(line)))
-		.map(line => line.replace(/^\s+/, '').replace(/\s+$/, ''))
+		.map(line => line.replace(/\s+$/, ''))
 		// Strip off timestamps
 		.map(line => /^\d\d:\d\d:\d\d \w\w -/.test(line) ? line.slice(line.indexOf('-') + 2) : line);
 	if (errorTest) {
