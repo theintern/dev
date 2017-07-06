@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import { echo } from 'shelljs';
 import { join } from 'path';
-import { buildDir, exec, internDev } from './common';
+import { buildDir, exec, internDev, log } from './common';
 
 const modes: { [name: string]: Function } = {
 	all() {
@@ -30,7 +29,7 @@ function run(runner: string) {
 		command.push('config=' + join(buildDir, config));
 	}
 
-	echo('## Running tests');
+	log('Running tests');
 	try {
 		exec(`${command.join(' ')}`, { silent: false });
 	}
@@ -42,7 +41,7 @@ function run(runner: string) {
 			throw error;
 		}
 	}
-	echo('## Done testing');
+	log('Done testing');
 }
 
 if (internDev && internDev.testConfig) {

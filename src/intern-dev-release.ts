@@ -12,35 +12,31 @@
 //   7. Push the new commits and tag back to the original repo.
 //
 
-import { mkdir, rm, test } from 'shelljs';
+import { echo, mkdir, rm, test } from 'shelljs';
 import * as semver from 'semver';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { format } from 'util';
-import { buildDir, exec, internDev } from './common';
+import { buildDir, exec, internDev, log } from './common';
 import { join } from 'path';
 import { createInterface } from 'readline';
 import { red } from 'chalk';
 
 function cleanup() {
-	print('\nCleaning up...\n');
+	log('Cleaning up...');
 	process.chdir(rootDir);
 	rm('-rf', tmpDir);
 }
 
-function print(...args: any[]) {
-	rl.write(format(args[0], ...args.slice(1)));
-}
-
 function printUsage() {
-	print(`Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n`);
-	print('\n');
-	print(`  help        Displays this message\n`);
-	print(`  branch      Branch to release; defaults to the current branch.\n`);
-	print(`  version     Version to release; defaults to what is listed in the\n`);
-	print(`              package.json in the branch. It should only be specified\n`);
-	print(`              for pre-releases\n`);
-	print(`  prerelease  A prerelease tag to attach to the version, like 'alpha'\n`);
-	print(`              or 'beta'.\n`);
+	echo(`Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n`);
+	echo('\n');
+	echo(`  help        Displays this message\n`);
+	echo(`  branch      Branch to release; defaults to the current branch.\n`);
+	echo(`  version     Version to release; defaults to what is listed in the\n`);
+	echo(`              package.json in the branch. It should only be specified\n`);
+	echo(`              for pre-releases\n`);
+	echo(`  prerelease  A prerelease tag to attach to the version, like 'alpha'\n`);
+	echo(`              or 'beta'.\n`);
 }
 
 async function prompt(...args: any[]) {
@@ -104,7 +100,7 @@ process.argv.slice(2).forEach(arg => {
 			break;
 
 		default:
-			print(`Invalid argument "${arg}"\n\n`);
+			echo(`Invalid argument "${arg}"\n\n`);
 			printUsage();
 			process.exit(1);
 	}
@@ -149,15 +145,15 @@ if (!npmTag) {
 				exec('git diff-index --quiet HEAD');
 			}
 			catch (error) {
-				print(red('Warning: You have uncommitted changes.\n'));
+				log(red('Warning: You have uncommitted changes.'));
 			}
 		}
 
-		print(`Creating a new release from branch ${branch}`);
+		let message = `Creating a new release from branch ${branch}`;
 		if (version) {
-			print(` with version override ${version}`);
+			message += ` with version override ${version}`;
 		}
-		print('.\n');
+		log(`${message}.`);
 
 		// Create a package build directory and clone this repo into it
 		process.chdir(rootDir);
@@ -169,7 +165,7 @@ if (!npmTag) {
 
 		// Cd into the build dir and checkout the branch that's being released
 		process.chdir(tmpDir);
-		print(`\nBuilding branch "${branch}"...\n`);
+		log(`Building branch "${branch}"...`);
 		exec(`git checkout ${branch}`);
 
 		// Load package JSON from the build directory
@@ -260,7 +256,7 @@ if (!npmTag) {
 
 		// If this is a major/minor release, we also create a new branch for it
 		if (newBranch) {
-			print(`Creating new branch ${newBranch}...\n`);
+			log(`Creating new branch ${newBranch}...`);
 			// Create the new branch starting at the tagged release version
 			exec(`git checkout -b ${newBranch} ${version}`);
 
@@ -273,13 +269,13 @@ if (!npmTag) {
 		}
 
 		// Checkout and build the new release in preparation for publishing
-		print(`Checking out and building ${version}...\n`);
+		log(`Checking out and building ${version}...`);
 		exec(`git checkout ${version}`);
 		exec('npm install');
 		exec('npm run build');
 
 		// Give the user a chance to verify everything is good before making any updates
-		print('\nDone!\n\n');
+		log('Done!');
 
 		let publishDir = internDev && internDev.publishDir;
 		if (!publishDir) {
@@ -289,14 +285,14 @@ if (!npmTag) {
 			}
 		}
 
-		print(`Package to be published from ${tmpDir}/${publishDir}.\n\n`);
+		log(`Package to be published from ${tmpDir}/${publishDir}.`);
 
 		let question = 'Please confirm packaging success, then enter "y" to publish to npm\n' +
 			`'${npmTag}', push tag '${version}', and upload. Enter any other key to bail.\n` +
 			'> ';
 
 		if (await prompt(question) !== 'y') {
-			print('Not publishing\n');
+			log('Not publishing');
 			throw new Error('Aborted');
 		}
 
@@ -310,13 +306,13 @@ if (!npmTag) {
 		});
 		exec('git push origin --tags');
 
-		print('\nAll done! Yay!\n');
+		log('All done! Yay!');
 	}
 	catch (error) {
 		if (error.message !== 'Aborted') {
 			// Something broke -- display an error
-			print(`${red(error.stack)}\n`);
-			print('Aborted.\n');
+			log(`${red(error.stack)}`);
+			log('Aborted.');
 			exitCode = 1;
 		}
 	}
