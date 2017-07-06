@@ -298,7 +298,7 @@ if (!npmTag) {
 
 		// Publish the package from <rootDir>/<tmpDir>/<publishDir> or <rootDir>/<tmpDir>/<buildDir>
 		process.chdir(publishDir);
-		exec(`npm publish --tag ${npmTag}`);
+		exec(`npm publish --tag ${npmTag} --access public`);
 
 		// Update the original repo with the new branch and tag pointers
 		pushBranches.map(function (branch) {
