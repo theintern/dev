@@ -1,6 +1,14 @@
+<p align="center">
+<img src="https://cdn.rawgit.com/theintern/leadfoot/master/docs/logo.svg" alt="Leadfoot logo" height="90">
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<img src="https://cdn.rawgit.com/theintern/intern/master/docs/logo.svg" alt="Intern logo" height="128">
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<img src="https://cdn.rawgit.com/theintern/digdug/master/docs/logo.svg" alt="Dig Dug logo" height="80">
+</p>
+
 # intern-dev
 
-Support scripts for Intern and its sub-projects
+This project contains support scripts for Intern and its sub-projects.
 
 ## Usage
 
@@ -20,9 +28,7 @@ Include this project in `devDependencies` in your Intern component's `package.js
 
 ## Configuration
 
-Components should generally try to follow the conventions used by this package (standard tslint, sources in `src`, test
-config in `tests/intern.js`, etc.), in which case no configuration is required. However, limited configuration is
-supported through the `internDev` property in your project's `package.json`.
+Components should generally try to follow the conventions used by this package (standard tslint, sources in `src`, test config in `tests/intern.js`, etc.), in which case no configuration is required. However, limited configuration is supported through the `internDev` property in your project's `package.json`.
 
 ```js
 "internDev": {
