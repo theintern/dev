@@ -4,7 +4,7 @@
   "description": "Development support scripts for Intern projects.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/theintern/intern-dev.git"
+    "url": "https://github.com/theintern/dev.git"
   },
   "license": "BSD-3-Clause",
   "files": [
@@ -30,11 +30,11 @@
     "@types/shelljs": "~0.7.1",
     "ts-node": "~3.1.0"
   },
-  "bugs": "https://github.com/theintern/intern-dev/issues",
+  "bugs": "https://github.com/theintern/dev/issues",
   "keywords": [
     "intern"
   ],
-  "homepage": "http://gitub.com/theintern/intern-dev",
+  "homepage": "http://gitub.com/theintern/dev",
   "bin": {
     "intern-dev-build": "./intern-dev-build.js",
     "intern-dev-clean": "./intern-dev-clean.js",
