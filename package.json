@@ -1,5 +1,5 @@
 {
-  "name": "intern-dev",
+  "name": "@theintern/dev",
   "version": "0.4.1-pre",
   "description": "Development support scripts for Intern projects.",
   "repository": {
