@@ -1,14 +1,14 @@
-<p align="center">
+# intern-dev
+
+Support scripts for Intern and its sub-projects
+
+<br><p align="center">
 <img src="https://cdn.rawgit.com/theintern/leadfoot/master/docs/logo.svg" alt="Leadfoot logo" height="90">
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 <img src="https://cdn.rawgit.com/theintern/intern/master/docs/logo.svg" alt="Intern logo" height="128">
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 <img src="https://cdn.rawgit.com/theintern/digdug/master/docs/logo.svg" alt="Dig Dug logo" height="80">
-</p>
-
-# intern-dev
-
-This project contains support scripts for Intern and its sub-projects.
+</p></br>
 
 ## Usage
 
