@@ -1,0 +1,57 @@
+.header {
+	.container {
+		padding-left: 1rem;
+	}
+}
+
+.navbar {
+
+	.navbar-item {
+		font-family: 'Zilla Slab', serif;
+		font-size: 0.85rem;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+
+	.navbar-brand {
+		.navbar-item {
+			+above($desktop) {
+				padding-left: 0;
+			}
+			&:hover {
+				background: transparent;
+			}
+			img.site-logo {
+				width: 278px;
+				max-height: none;
+			}
+		}
+	}
+}
+
+/* Page specific */
+.page-docs {
+	.navbar-item[data-title = 'Docs'] {
+		background: $primary;
+		color: $light;
+	}
+}
+
+.page-secondary {
+	.navbar {
+		.navbar-brand {
+			min-height: auto;
+			
+			.navbar-item,
+			.navbar-item:hover {
+				background: url("/images/intern-logo-docs.svg") no-repeat left 50%;
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+			.site-logo {
+				visibility: hidden;
+				height: 33px;
+			}
+		}
+	}
+}

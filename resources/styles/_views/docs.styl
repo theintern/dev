@@ -1,0 +1,103 @@
+.html-fixed,
+.page-docs {
+	height:100%;
+	min-height:100%;
+
+	+above($tablet) {
+		overflow: hidden;
+	}
+}
+
+
+.page-docs {
+	display: flex;
+	flex-direction: column;
+
+	+above($tablet) {
+		.docs-layout {
+			flex: 1 1 auto;
+			overflow: hidden;
+			margin: 0;
+			width: 100%;
+
+			.docs-column {
+				overflow-y: auto;
+			}
+		}
+	}
+
+	.header {
+		flex: 0 0 auto;
+		border-bottom: 1px solid $border-color;
+	}
+
+	.footer {
+		flex: 0 0 auto;
+	}
+
+	.docs-nav {
+		background: $light;
+		border-right: 1px solid $border-color;
+		padding: 0;
+
+		+below($desktop) {
+			padding-top: 0.5rem;
+		}
+
+		.field {
+			margin-bottom: 0;
+			padding: 0.5rem 1rem;
+
+			.select,
+			.control,
+			select {
+				width: 100%;
+			}
+		}
+	}
+
+	.docs-content {
+		padding-left: 5vw;
+		padding-right: 5vw;
+
+		> h1 {
+			border-bottom: 1px solid $border-color;
+			padding-bottom: 0.5rem;
+			margin-bottom: 2rem;
+		}
+
+		// > h2 {
+		// 	font-size: 1.8rem;
+		// }
+
+		// > h3 {
+		// 	font-size: 1.5rem;
+		// }
+
+		table {
+			border-left: solid 1px $gray;
+			border-bottom: solid 1px $gray;
+			margin-left: auto;
+			margin-right: auto;
+
+			th {
+				font-family: $heading-font;
+				background: $dark-gray;
+				color: $gray;
+			}
+			th, td {
+				padding: 0.2rem;
+				padding-left: 0.4rem;
+				padding-right: 1rem;
+				border-right: solid 1px $gray;
+			}
+			tbody tr:nth-child(2n) {
+				background: $gray;
+			}
+		}
+	}
+}
+
+.coming-soon {
+	max-width: 300px;
+}

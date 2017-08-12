@@ -1,0 +1,288 @@
+#!/usr/bin/env node
+
+import { join, relative } from 'path';
+import { existsSync, readFileSync } from 'fs';
+
+const Metalsmith = require('metalsmith');
+const assets = require('metalsmith-assets');
+const matters = require('metalsmith-matters');
+const markdown = require('metalsmith-markdownit');
+const hljs = require('highlight.js');
+const anchor = require('markdown-it-anchor');
+const headings = require('metalsmith-headings');
+const layouts = require('metalsmith-layouts');
+const collections = require('metalsmith-collections');
+const stylus = require('stylus');
+const rupture = require('rupture');
+const typographic = require('typographic');
+const nib = require('nib');
+
+// Build the docs
+let metalsmith = new Metalsmith(__dirname)
+	.frontmatter(false)
+	.use(
+		collections({
+			pages: { pattern: '**/*.md' }
+		})
+	)
+	.use(addReadme())
+	.use(tocFilter())
+	.use(fixFrontMatter())
+	.use(matters())
+	.use(pageType())
+	.use(gfmarkdown())
+	.use(
+		headings({
+			selectors: ['h1', 'h2', 'h3']
+		})
+	)
+	.use(menuify())
+	.use(
+		layouts({
+			engine: 'ejs',
+			default: 'doc.ejs',
+			directory: join(__dirname, 'layouts')
+		})
+	)
+	.use(styles())
+	.use(
+		assets({
+			source: 'assets'
+		})
+	)
+	.destination(join(process.cwd(), '_build', 'docs'));
+
+if (existsSync('docs')) {
+	metalsmith.source(join(process.cwd(), 'docs')).ignore('**/*.svg');
+} else {
+	metalsmith.source(process.cwd()).ignore('*').ignore('.*');
+}
+
+metalsmith.build((error: Error) => {
+	if (error) {
+		throw error;
+	}
+	console.log('Build finished!');
+});
+
+/**
+ * Create a markdown parser than highlights code blocks and replaces relative
+ * markdown links with links to HTML files.
+ */
+function gfmarkdown() {
+	const md = markdown({
+		// Syntax highlight with hilight.js
+		highlight: (str: string, lang: string) => {
+			if (lang && hljs.getLanguage(lang)) {
+				try {
+					return (
+						`<pre class="hljs"><code class="language-${lang}">` +
+						hljs.highlight(lang, str, true).value +
+						'</code></pre>'
+					);
+				} catch (_) {
+					// ignore
+				}
+			}
+
+			return '<pre class="hljs"><code>' + str + '</code></pre>';
+		}
+	}).use(anchor);
+
+	// Add a link parser rule to convert markdown links to HTML links
+	const defaultRender =
+		md.parser.renderer.rules.link_open ||
+		((tokens: any[], idx: number, options: any, _env: any, self: any) => {
+			return self.renderToken(tokens, idx, options);
+		});
+	md.parser.renderer.rules.link_open = function(
+		tokens: any[],
+		idx: number,
+		options: any,
+		env: any,
+		self: any
+	) {
+		const hrefIdx = tokens[idx].attrIndex('href');
+		const href = tokens[idx].attrs[hrefIdx];
+		if (/\.md/.test(href[1])) {
+			const [file, hash] = href[1].split('#');
+			let newHref = file.replace(/\.md$/, '.html');
+			if (hash) {
+				newHref += `#${hash}`;
+			}
+			href[1] = newHref;
+		}
+		return defaultRender(tokens, idx, options, env, self);
+	};
+
+	return md;
+}
+
+/**
+ * Add a page type attribute to each page
+ */
+function addReadme() {
+	return (
+		files: { [key: string]: any },
+		metalsmith: any,
+		done: (error?: Error) => {}
+	) => {
+		const readme = relative(
+			metalsmith.source(),
+			join(process.cwd(), 'README.md')
+		);
+		metalsmith.readFile(readme, (error: Error, data: any) => {
+			if (error) {
+				done(error);
+			} else {
+				files['index.md'] = data;
+				data.path = readme;
+				data.pagetype = 'page-secondary page-docs';
+				done();
+			}
+		});
+	};
+}
+
+/**
+ * Uncomment frontmatter, if there is any
+ */
+function fixFrontMatter() {
+	return (
+		files: { [key: string]: any },
+		_metalsmith: any,
+		done: () => {}
+	) => {
+		Object.keys(files).forEach(filename => {
+			const file = files[filename];
+			const contents = file.contents.toString('utf-8');
+			if (/^<!--\n---[^]*---\n-->/.test(contents)) {
+				file.contents = Buffer.from(
+					contents.replace(/^<!--\n(---[^]*---\n)-->/, '$1'),
+					'utf8'
+				);
+			}
+		});
+		done();
+	};
+}
+
+/**
+ * Add a page type attribute to each page
+ */
+function pageType() {
+	return (
+		_files: { [key: string]: any },
+		metalsmith: any,
+		done: () => {}
+	) => {
+		const pages = metalsmith.metadata().collections.pages;
+		pages.forEach((page: any) => {
+			page.layout = 'doc.ejs';
+			page.pagetype = 'page-secondary page-docs';
+		});
+		done();
+	};
+}
+
+/**
+ * Build styles
+ */
+function styles(options?: { [key: string]: any }) {
+	options = options || {};
+
+	return (
+		files: { [key: string]: any },
+		_metalsmith: any,
+		done: () => {}
+	) => {
+		const dest = options.destination || 'css';
+		const styles = join(__dirname, 'styles');
+		const styleFile = join(styles, 'style.styl');
+		const mainStyle = readFileSync(styleFile, { encoding: 'utf8' });
+		const css = stylus(mainStyle)
+			.use(typographic())
+			.import('typographic')
+			.use(rupture())
+			.use(nib())
+			.include(styles)
+			.set('filename', mainStyle)
+			.render();
+
+		files[`${dest}/style.css`] = {
+			contents: Buffer.from(css)
+		};
+
+		done();
+	};
+}
+
+/**
+ * Filter out tables-of-contents generated by vim
+ */
+function tocFilter() {
+	return (
+		files: { [key: string]: any },
+		_metalsmith: any,
+		done: () => {}
+	) => {
+		Object.keys(files).forEach(filename => {
+			const file = files[filename];
+			const contents = file.contents.toString('utf-8');
+			if (
+				/<!-- vim-markdown-toc[^]*<!-- vim-markdown-toc -->/.test(
+					contents
+				)
+			) {
+				file.contents = Buffer.from(
+					contents.replace(
+						/<!-- vim-markdown-toc[^]*<!-- vim-markdown-toc -->/,
+						''
+					),
+					'utf8'
+				);
+			}
+		});
+		done();
+	};
+}
+
+/**
+ * Update page metadata to support menu generation
+ */
+function menuify() {
+	return (
+		files: { [key: string]: any },
+		_metalsmith: any,
+		done: () => {}
+	) => {
+		Object.keys(files).forEach(filename => {
+			const file = files[filename];
+			console.log('menuifying ' + filename);
+			// Add a 'target' attribute that points to the rendered file location
+			file.target = file.path.replace(/\.md$/, '.html');
+
+			if (!file.title) {
+				const h1 = file.headings.find(
+					(heading: any) => heading.tag === 'h1'
+				);
+				file.title = h1.text;
+			}
+
+			file.menu = [];
+			const menuHeadings = file.headings.filter(
+				(heading: any) => heading.tag !== 'h1'
+			);
+			let h2: { text: string; id: string; children: any[] };
+			menuHeadings.forEach((heading: any) => {
+				if (heading.tag === 'h2') {
+					h2 = { text: heading.text, id: heading.id, children: [] };
+					file.menu.push(h2);
+				} else if (heading.tag === 'h3') {
+					h2.children.push({ text: heading.text, id: heading.id });
+				}
+			});
+		});
+		done();
+	};
+}

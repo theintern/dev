@@ -1,0 +1,110 @@
+body,
+html {
+	font-family: $body-font;
+	+below($desktop) {
+		font-size: 16px;
+	}	
+}
+
+// Helpers
+//Fixes for bulma.styl
+
+for $size, $i in $sizes
+	h{$i+1} {
+		color $title-color
+		font-family: $heading-font;
+		margin-top: 1rem;
+		font-size: 0.75*$size;
+	}
+
+.title
+	color $title-color
+	font-size $title-size
+	font-weight $title-weight
+	line-height 1.125
+	strong
+		color $title-strong-color
+		font-weight $title-strong-weight
+	& + .highlight
+		margin-top -0.75rem
+	&:not(.is-spaced) + .subtitle
+		margin-top -1.5rem
+	// Sizes
+	for $size, $i in $sizes
+		&.is-{$i+1}
+			font-size $size
+
+.subtitle
+	color $subtitle-color
+	font-size $subtitle-size
+	font-weight $subtitle-weight
+	line-height 1.25
+	strong
+		color $subtitle-strong-color
+		font-weight $subtitle-strong-weight
+	&:not(.is-spaced) + .title
+		margin-top -1.5rem
+	// Sizes
+	for $size, $i in $sizes
+		&.is-{$i+1}
+			font-size $size
+
+.title:not(:last-child), 
+.subtitle:not(:last-child) {
+	margin-bottom: 1rem;
+}
+
+.align-center {
+	align-items: center;
+}
+
+.menu {
+	font-size: 1rem;
+	
+	ul,
+	ul li {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.menu-label {
+		background-color: $gray;
+		color: rgba($dark-gray, 0.8);
+		font-size: 0.7rem;
+		font-weight: 600;
+		padding: 0.5em 0.75em;
+		margin: 0;
+
+		+below($tablet) {
+			padding:0.5rem  1.5rem;
+		}
+	}
+
+	.menu-list {
+		margin: 0 1rem;
+
+		a {
+			font-size: 0.8rem;
+		}
+
+		a:not(.is-active):hover {
+			background: #fff;
+		}
+
+		li ul {
+			border-left: 1px solid $border-color;
+		}
+	}
+}
+
+@font-face {
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	src: url(font-icon-path + ".eot?v=#" + font-icon-version);
+	src: url(font-icon-path + ".eot?#iefix&v=#" + font-icon-version) format("embedded-opentype"),
+		url(font-icon-path + ".woff?v=#" + font-icon-version) format("woff"),
+		url(font-icon-path + ".ttf?v=#" + font-icon-version) format("truetype"),
+		url(font-icon-path + ".svg#fontawesomeregular?v=#" + font-icon-version) format("svg");
+}

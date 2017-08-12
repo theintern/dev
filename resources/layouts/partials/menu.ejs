@@ -1,0 +1,27 @@
+<ul class="menu-list">
+<% pages.forEach(page => { %>
+	<li>
+	<% if (path === page.path) { %>
+		<a href="<%- page.target %>" class="is-active"><%- page.title %></a>
+	<% } else { %>
+		<a href="<%- page.target %>"><%- page.title %></a>
+	<% } %>
+	<% if (path === page.path) { %>
+	<ul>
+		<% page.menu.forEach(entry => { %>
+			<li>
+			<a href="#<%- entry.id %>"><%- entry.text %></a>
+			<% if (entry.children.length > 0) { %>
+				<ul>
+				<% entry.children.forEach(child => { %>
+				  <li><a href="#<%- child.id %>"><%- child.text %></a></li>
+				<% }) %>
+				</ul>
+			<% } %>
+			</li>
+		<% }) %>
+	</ul>
+	<% } %>
+	</li>
+<% }) %>
+</ul>
