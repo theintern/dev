@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="html-fixed">
+<html <% if (html_type) { %>class="<%- html_type %>"<% } %>>
 	<head>
 		<title>Intern</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -8,7 +8,7 @@
 		<link rel="icon" href="/favicon.ico">
 		<link rel="stylesheet" href="css/style.css" type="text/css">
 	</head>
-	<body class="<%- pagetype %>">
+	<body <% if (body_type) { %>class="<%- body_type %>"<% } %>>
 		<header class="header">
 			<div class="container">
 				<nav class="navbar">
@@ -18,7 +18,18 @@
 					<div class="navbar-menu">
 						<div class="navbar-start"></div>
 						<div class="navbar-end">
-							<a class="navbar-item" href="https://github.com/theintern/intern" data-title="Github">Github</a>
+							<div class="navbar-item has-dropdown is-hoverable">
+								<a class="navbar-item">Docs</a>
+								<div class="navbar-dropdown ">
+									<a class="navbar-item " href="/intern/v3">
+										Intern 3
+									</a>
+									<a class="navbar-item " href="/intern/v4">
+										Intern 4
+									</a>
+								</div>
+							</div>
+							<a class="navbar-item" href="<%- repository %>" data-title="">Github</a>
 						</div>
 					</div>
 				</nav>

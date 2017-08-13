@@ -13,7 +13,7 @@
     "*.json"
   ],
   "dependencies": {
-    "bulma.styl": "~0.5.1",
+    "bulma.styl": "0.5.0",
     "chalk": "~2.0.1",
     "chokidar": "~1.7.0",
     "ejs": "~2.5.7",
@@ -27,6 +27,7 @@
     "metalsmith-layouts": "~1.8.1",
     "metalsmith-markdownit": "~0.4.0",
     "metalsmith-matters": "~1.2.0",
+    "metalsmith-packagejson": "~1.1.0",
     "nib": "~1.1.2",
     "rupture": "~0.6.2",
     "semver": "~5.3.0",
