@@ -1,37 +1,21 @@
-<!DOCTYPE html>
-<html <% if (html_type) { %>class="<%- html_type %>"<% } %>>
-	<head>
-		<title>Intern</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<meta charset="UTF-8">
-		<link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-		<link rel="icon" href="/favicon.ico">
-		<link rel="stylesheet" href="css/style.css" type="text/css">
-	</head>
-	<body <% if (body_type) { %>class="<%- body_type %>"<% } %>>
-		<header class="header">
-			<div class="container">
-				<nav class="navbar">
-					<div class="navbar-brand">
-						<a href="/" class="navbar-item"><img src="/images/intern-logo.svg" class="site-logo" alt="The Intern"></a>
-					</div>
-					<div class="navbar-menu">
-						<div class="navbar-start"></div>
-						<div class="navbar-end">
-							<div class="navbar-item has-dropdown is-hoverable">
-								<a class="navbar-item">Docs</a>
-								<div class="navbar-dropdown ">
-									<a class="navbar-item " href="/intern/v3">
-										Intern 3
-									</a>
-									<a class="navbar-item " href="/intern/v4">
-										Intern 4
-									</a>
-								</div>
-							</div>
-							<a class="navbar-item" href="<%- repository %>" data-title="">Github</a>
-						</div>
-					</div>
-				</nav>
+<header class="header">
+	<div class="container">
+		<nav class="navbar">
+			<div class="navbar-brand">
+				<a href="/" class="navbar-item"><img src="/images/intern-logo.svg" class="site-logo" alt="The Intern"></a>
+				<div class="navbar-burger">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
 			</div>
-		</header>
+			<div class="navbar-menu">
+				<div class="navbar-start"></div>
+				<div class="navbar-end">
+					<a class="navbar-item" href="/docs">Docs</a>
+					<a class="navbar-item" href="https://github.com/theintern/intern" data-title="">Github</a>
+				</div>
+			</div>
+		</nav>
+	</div>
+</header>

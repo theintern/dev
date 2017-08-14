@@ -1,0 +1,95 @@
+html,
+body {
+	@include fluid(font-size, 16px, 18px);
+	font-family: $body-font;
+	font-weight: 400;
+	line-height: 1.45;
+	color: $body-text;
+}
+
+.title {
+	font-family: $title-font;
+	line-height: 1.2;
+	margin: 1.414em 0 0.5em;
+
+	&:first-child {
+		margin-top: 0;
+	}
+
+	&:not(:last-child) {
+		margin-bottom: 1rem;
+	}
+}
+
+@each $size in $sizes {
+	$i: index($sizes, $size);
+	h#{$i} {
+		@extend .title;
+		font-size: $size - 0.5rem;
+	}
+}
+
+code:not(.hljs) {
+	background: $inline-code-background;
+	border-radius: 3px;
+	color: rgb(36, 41, 46);
+	font-family: $font-code;
+	font-size: $code-font-size;
+	padding: 0.2em;
+	white-space: nowrap;
+}
+
+p:not(:last-child) {
+	margin-bottom: 1.5em;
+}
+
+ul li {
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
+}
+
+li p {
+	margin-bottom: 0;
+}
+
+li ul,
+li ol {
+	margin: 0.5 1.5em;
+}
+
+ul,
+ol {
+	margin: 0 1.5em 1.5em 1.5em;
+}
+
+ul {
+	list-style-type: disc;
+}
+
+ol {
+	list-style-type: decimal;
+}
+
+ol ol {
+	list-style: upper-alpha;
+}
+
+ol ol ol {
+	list-style: lower-roman;
+}
+
+ol ol ol ol {
+	list-style: lower-alpha;
+}
+
+dl {
+	margin: 0 0 1.5em 0;
+}
+
+dl dt {
+	font-weight: bold;
+}
+
+dd {
+	margin-left: 1.5em;
+}

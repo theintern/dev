@@ -1,37 +1,33 @@
 .page-home {
 	padding-top: 3vw;
-
 	.hero {
 		border-bottom: 1px solid $border-color;
 		padding-top: 5vw;
-
 		.title {
 			margin-bottom: 1.5rem;
 		}
-
 		.anim {
-			background: radial-gradient(30% 45%, rgba(#A2EDFD, 0.4) 51%, rgba(188,235,240,0.00) 98%) no-repeat;
+			background: radial-gradient(30% 45%, rgba(#A2EDFD, 0.4) 51%, rgba(188, 235, 240, 0.00) 98%) no-repeat;
 			background-size: contain;
 		}
-	}
 
+		.button {
+			margin-bottom: 1.5rem;
+		}
+	}
 	.features {
 		border-bottom: 1px solid $border-color;
 	}
-
 	.who {
 		border-bottom: 1px solid $border-color;
-
 		.column {
 			text-align: center;
-
 			svg {
 				margin: 0 auto;
 				max-width: 100%;
 			}
 		}
 	}
-
 	.workwith {
 		.underline {
 			display: inline-block;
@@ -39,10 +35,9 @@
 			width: 6rem;
 		}
 	}
-
 	.docs {
 		.viewGuide {
-			background: url("/images/icon-docs.svg") no-repeat 50% 50%, radial-gradient(30% 45%, rgba(#A2EDFD, 0.4) 51%, rgba(188,235,240,0.00) 98%) no-repeat;
+			background: url("/images/icon-docs.svg") no-repeat 50% 50%, radial-gradient(30% 45%, rgba(#A2EDFD, 0.4) 51%, rgba(188, 235, 240, 0.00) 98%) no-repeat;
 			background-size: contain;
 			display: flex;
 			flex-direction: column;
@@ -51,17 +46,14 @@
 			justify-content: center;
 		}
 	}
-
 	.need-help {
 		.button {
 			min-width: 150px;
-
 			&.gitter {
 				margin-left: 0.5rem;
 				margin-right: 0.5rem;
 			}
 		}
-
 		.bugs {
 			margin-top: 2rem;
 		}

@@ -13,13 +13,13 @@
     "*.json"
   ],
   "dependencies": {
-    "bulma.styl": "0.5.0",
+    "bulma": "~0.5.1",
     "chalk": "~2.0.1",
     "chokidar": "~1.7.0",
     "ejs": "~2.5.7",
     "glob": "~7.1.2",
-    "highlight.js": "~9.12.0",
     "markdown-it-anchor": "~4.0.0",
+    "markdown-it-highlightjs": "~3.0.0",
     "metalsmith": "~2.3.0",
     "metalsmith-assets": "~0.1.0",
     "metalsmith-collections": "~0.9.0",
@@ -28,22 +28,24 @@
     "metalsmith-markdownit": "~0.4.0",
     "metalsmith-matters": "~1.2.0",
     "metalsmith-packagejson": "~1.1.0",
-    "nib": "~1.1.2",
-    "rupture": "~0.6.2",
+    "metalsmith-serve": "0.0.7",
+    "metalsmith-watch": "~1.0.3",
+    "rm": "~0.1.8",
     "semver": "~5.3.0",
     "shelljs": "~0.7.7",
     "stylus": "~0.54.5",
     "tslint": "~5.6.0",
-    "typescript": "~2.4.1",
-    "typographic": "~3.0.0"
+    "typescript": "~2.4.1"
   },
   "devDependencies": {
     "@types/chalk": "~0.4.31",
     "@types/chokidar": "~1.6.0",
     "@types/glob": "~5.0.30",
     "@types/node": "~7.0.23",
+    "@types/node-sass": "~3.10.32",
     "@types/semver": "~5.3.31",
     "@types/shelljs": "~0.7.1",
+    "node-sass": "~4.5.3",
     "ts-node": "~3.1.0"
   },
   "bugs": "https://github.com/theintern/dev/issues",
@@ -60,7 +62,7 @@
     "intern-dev-test": "./intern-dev-test.js"
   },
   "scripts": {
-    "build": "ts-node ./src/intern-dev-build.ts",
+    "build": "ts-node ./src/intern-dev-build.ts && ts-node ./support/build_styles.ts",
     "clean": "ts-node ./src/intern-dev-clean.ts",
     "release": "npm run lint && ts-node ./src/intern-dev-release.ts",
     "lint": "ts-node ./src/intern-dev-lint.ts"

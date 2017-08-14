@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+	<%- include partials/head %>
+	<body <% if (pageClass) { %>class="<%- pageClass %>"<% } %>>
+		<%- include partials/header %>
+		<%- contents %>
+		<%- include partials/footer %>
+	</body>
+</html>

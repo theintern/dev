@@ -1,22 +1,30 @@
-<% include partials/header %>
-<div class="columns docs-layout">
-	<div class="column is-3 docs-column docs-nav">
-		<div class="field">
-			<div class="control">
-				<div class="select is-primary is-small">
-				<select>
-					<option>Select dropdown</option>
-					<option>With options</option>
-				</select>
-				</div>
+<!DOCTYPE html>
+<html class="html-fixed">
+	<%- include partials/head %>
+	<body class="page-docs page-secondary">
+		<%- include partials/header %>
+
+		<div class="columns docs-layout">
+			<div class="column is-3 docs-column docs-nav">
+				<aside class="menu">
+					<div class="field">
+						<div class="control">
+							<div class="select is-primary is-small">
+							<select>
+								<option>Select dropdown</option>
+								<option>With options</option>
+							</select>
+							</div>
+						</div>
+					</div>
+					<% include partials/menu %>
+				</aside>
+			</div>
+			<div class="column is-9 docs-column docs-content">
+				<%- contents %>
 			</div>
 		</div>
-		<aside class="menu">
-			<% include partials/menu %>
-		</aside>
-	</div>
-	<div class="column is-9 docs-column docs-content">
-		<%- contents %>
-	</div>
-</div>
-<% include partials/footer %>
+
+		<%- include partials/footer %>
+	</body>
+</html>

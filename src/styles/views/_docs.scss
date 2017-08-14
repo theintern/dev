@@ -1,0 +1,57 @@
+.html-fixed,
+.page-docs {
+	height: 100%;
+	min-height: 100%;
+	@include tablet {
+		overflow: hidden;
+	}
+}
+
+.page-docs {
+	display: flex;
+	flex-direction: column;
+	@include tablet {
+		.docs-layout {
+			flex: 1 1 auto;
+			overflow: hidden;
+			margin: 0;
+			width: 100%;
+			.docs-column {
+				overflow-y: auto;
+			}
+		}
+	}
+	.header {
+		flex: 0 0 auto;
+		border-bottom: 1px solid $border-color;
+	}
+	.footer {
+		flex: 0 0 auto;
+	}
+	.docs-nav {
+		background: $light;
+		border-right: 1px solid $border-color;
+		padding: 0;
+		
+		.tabs.is-toggle {
+			margin-bottom: 0;
+			ul {
+				margin: 0;
+				padding: 0 1rem;
+			}
+		}
+	}
+	.docs-content {
+		padding-left: 5vw;
+		padding-right: 5vw;
+		>h1 {
+			border-bottom: 1px solid $border-color;
+			padding-bottom: 1.5rem;
+			margin-bottom: 2rem;
+		}
+	}
+}
+
+.coming-soon {
+	max-width: 300px;
+}

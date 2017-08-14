@@ -1,0 +1,27 @@
+$mobile: 768px;
+
+$title-font: 'Zilla Slab', serif;
+
+$primary: #2EC186;
+
+$secondary: #7C8EA1;
+$grey-darker: #4A4A4A;
+$dark-gray: $grey-darker;
+$border-color: #E1E4E6;
+$button-border-color: #C8D1D8;
+$light: #FAFBFC;
+$gray: #F0F2F5;
+$color-inline-code: #C94169;
+// Typography
+$heading-weight: 500;
+$heading-color: $dark-gray;
+
+$font-mono: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,'Source Code Pro',monospace;
+$font-code: $font-mono;
+
+$body-font: 'Source Sans Pro', sans-serif;
+$body-text: #333;
+
+$inline-code-background: rgba(27, 31, 35, 0.05);
+$code-background: #1d1f21;
+$code-font-size: 0.85rem;

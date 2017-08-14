@@ -1,35 +1,49 @@
 #!/usr/bin/env node
 
-import { join, relative } from 'path';
+import { dirname, join, relative, resolve, sep } from 'path';
 import { existsSync, readFileSync } from 'fs';
 
 const Metalsmith = require('metalsmith');
-const assets = require('metalsmith-assets');
-const frontmatter = require('metalsmith-matters');
-const packagejson = require('metalsmith-packagejson');
-const markdown = require('metalsmith-markdownit');
-const hljs = require('highlight.js');
 const anchor = require('markdown-it-anchor');
-const headings = require('metalsmith-headings');
-const layouts = require('metalsmith-layouts');
+const assets = require('metalsmith-assets');
 const collections = require('metalsmith-collections');
-const stylus = require('stylus');
-const rupture = require('rupture');
-const typographic = require('typographic');
-const nib = require('nib');
+const frontmatter = require('metalsmith-matters');
+const headings = require('metalsmith-headings');
+const highlight = require('markdown-it-highlightjs');
+const layouts = require('metalsmith-layouts');
+const markdown = require('metalsmith-markdownit');
+const packagejson = require('metalsmith-packagejson');
+// const serve = require('metalsmith-serve');
+// const watch = require('metalsmith-watch');
 
-// Build the docs
-let metalsmith = new Metalsmith(__dirname)
+const metalsmith = new Metalsmith(__dirname);
+
+// If the repo has a docs dir, use that as the source. If not, use the base
+// repo directory as the source and ignore everything by default.
+if (existsSync('docs')) {
+	metalsmith.source(join(process.cwd(), 'docs'));
+} else {
+	metalsmith.source(process.cwd()).ignore('*').ignore('.*');
+}
+
+metalsmith
 	.frontmatter(false)
 	.use(
 		frontmatter({
 			delims: ['<!-- ---', '--- -->']
 		})
 	)
+	.metadata({
+		basePartials: join(__dirname, 'layouts', 'partials') + sep,
+		site: {
+			name: 'The Intern',
+			description: 'Software testing for humans'
+		}
+	})
 	.use(updateOrder())
 	.use(
 		collections({
-			pages: { pattern: '**/*.md', sortBy: 'order' }
+			pages: { pattern: ['**/*.md'], sortBy: 'order' }
 		})
 	)
 	.use(packagejson())
@@ -45,6 +59,7 @@ let metalsmith = new Metalsmith(__dirname)
 		})
 	)
 	.use(menuify())
+	.use(fixLayoutPath())
 	.use(
 		layouts({
 			engine: 'ejs',
@@ -52,19 +67,28 @@ let metalsmith = new Metalsmith(__dirname)
 			directory: join(__dirname, 'layouts')
 		})
 	)
-	.use(styles())
 	.use(
 		assets({
 			source: 'assets'
 		})
 	)
+	// .use(
+	// 	serve({
+	// 		port: 4000,
+	// 		verbose: true
+	// 	})
+	// )
+	// .use(
+	// 	watch({
+	// 		paths: {
+	// 			'${source}/**/*': true
+	// 		},
+	// 		livereload: true
+	// 	})
+	// )
+	.ignore('**/*.svg')
+	.ignore('**/*.ejs')
 	.destination(join(process.cwd(), '_build', 'docs'));
-
-if (existsSync('docs')) {
-	metalsmith.source(join(process.cwd(), 'docs')).ignore('**/*.svg');
-} else {
-	metalsmith.source(process.cwd()).ignore('*').ignore('.*');
-}
 
 metalsmith.build((error: Error) => {
 	if (error) {
@@ -78,26 +102,7 @@ metalsmith.build((error: Error) => {
  * markdown links with links to HTML files.
  */
 function gfmarkdown() {
-	const md = markdown({
-		// Syntax highlight with hilight.js
-		highlight: (str: string, lang: string) => {
-			if (lang && hljs.getLanguage(lang)) {
-				try {
-					return (
-						`<pre class="hljs"><code class="language-${lang}">` +
-						hljs.highlight(lang, str, true).value +
-						'</code></pre>'
-					);
-				} catch (_) {
-					// ignore
-				}
-			}
-
-			return '<pre class="hljs"><code>' + str + '</code></pre>';
-		},
-		// allow HTML in markdown to pass through
-		html: true
-	}).use(anchor);
+	const md = markdown().use(anchor).use(highlight);
 
 	// Add a link parser rule to convert markdown links to HTML links
 	const defaultRender =
@@ -137,23 +142,27 @@ function addReadme() {
 		metalsmith: any,
 		done: (error?: Error) => {}
 	) => {
-		const readme = relative(
-			metalsmith.source(),
-			join(process.cwd(), 'README.md')
-		);
-		metalsmith.readFile(readme, (error: Error, data: any) => {
-			if (error) {
-				done(error);
-			} else {
-				files['index.md'] = data;
-				data.html_type = '';
-				data.path = readme;
-				if (!data.body_type) {
-					data.body_type = 'page-secondary page-docs';
+		const readme = join(process.cwd(), 'README.md');
+		if (!existsSync(readme)) {
+			done();
+		} else {
+			metalsmith.readFile(
+				relative(metalsmith.source(), readme),
+				(error: NodeJS.ErrnoException, data: any) => {
+					if (error) {
+						done(error);
+					} else {
+						// Add the README file to the pages list
+						const pages = metalsmith.metadata().pages;
+						pages.unshift(data);
+
+						files['index.md'] = data;
+						data.path = 'index.html';
+						done();
+					}
 				}
-				done();
-			}
-		});
+			);
+		}
 	};
 }
 
@@ -192,42 +201,10 @@ function pageType() {
 	) => {
 		const pages = metalsmith.metadata().collections.pages;
 		pages.forEach((page: any) => {
-			page.layout = 'doc.ejs';
-			page.html_type = 'html-fixed';
-			page.body_type = 'page-secondary page-docs';
+			if (page.layout == null) {
+				page.layout = 'doc.ejs';
+			}
 		});
-		done();
-	};
-}
-
-/**
- * Build styles
- */
-function styles(options?: { [key: string]: any }) {
-	options = options || {};
-
-	return (
-		files: { [key: string]: any },
-		_metalsmith: any,
-		done: () => {}
-	) => {
-		const dest = options.destination || 'css';
-		const styles = join(__dirname, 'styles');
-		const styleFile = join(styles, 'style.styl');
-		const mainStyle = readFileSync(styleFile, { encoding: 'utf8' });
-		const css = stylus(mainStyle)
-			.use(typographic())
-			.import('typographic')
-			.use(rupture())
-			.use(nib())
-			.include(styles)
-			.set('filename', mainStyle)
-			.render();
-
-		files[`${dest}/style.css`] = {
-			contents: Buffer.from(css)
-		};
-
 		done();
 	};
 }
@@ -264,35 +241,34 @@ function filterGhContent() {
  */
 function menuify() {
 	return (
-		files: { [key: string]: any },
-		_metalsmith: any,
+		_files: { [key: string]: any },
+		metalsmith: any,
 		done: () => {}
 	) => {
-		Object.keys(files).forEach(filename => {
-			const file = files[filename];
+		metalsmith.metadata().pages.forEach((page: any) => {
 			// Add a 'target' attribute that points to the rendered file
 			// location
-			file.target = file.path.replace(/\.md$/, '.html');
+			page.target = page.path.replace(/\.md$/, '.html');
 
 			// Set the file's title based on the first h1, if it's not already
 			// set
-			if (!file.title) {
-				const h1 = file.headings.find(
+			if (!page.title) {
+				const h1 = page.headings.find(
 					(heading: any) => heading.tag === 'h1'
 				);
-				file.title = h1.text;
+				page.title = h1.text;
 			}
 
 			// Create the menu for a given file
-			file.menu = [];
-			const menuHeadings = file.headings.filter(
+			page.menu = [];
+			const menuHeadings = page.headings.filter(
 				(heading: any) => heading.tag !== 'h1'
 			);
 			let h2: { text: string; id: string; children: any[] };
 			menuHeadings.forEach((heading: any) => {
 				if (heading.tag === 'h2') {
 					h2 = { text: heading.text, id: heading.id, children: [] };
-					file.menu.push(h2);
+					page.menu.push(h2);
 				} else if (heading.tag === 'h3') {
 					h2.children.push({ text: heading.text, id: heading.id });
 				}
@@ -336,6 +312,27 @@ function repositoryUrl() {
 		const pkg = metalsmith.metadata().pkg;
 		const repository = pkg.repository;
 		metalsmith.metadata().repository = repository.url.replace(/\.git$/, '');
+		done();
+	};
+}
+
+function fixLayoutPath() {
+	return (
+		files: { [key: string]: any },
+		_metalsmith: any,
+		done: () => {}
+	) => {
+		Object.keys(files).forEach(filename => {
+			const file = files[filename];
+			if (/\.\//.test(file.layout)) {
+				file.layout = resolve(
+					join(metalsmith.source(), dirname(file.path), file.layout)
+				);
+				console.log(
+					'updated layout of ' + filename + ' to ' + file.layout
+				);
+			}
+		});
 		done();
 	};
 }
