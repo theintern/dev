@@ -12,9 +12,7 @@ log('Generating API data');
 const options = {
 	tsconfig: 'tsconfig.json',
 	logger: 'none',
-	excludeExternals: true,
-	excludePrivate: true,
-	externalPattern: 'node_modules/**/*'
+	excludePrivate: true
 };
 const app = new Application(options);
 const inputFiles = app.options.read(options).inputFiles;
