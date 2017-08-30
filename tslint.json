@@ -54,7 +54,9 @@
     ],
     "quotemark": [
       true,
-      "single"
+      "single",
+      "avoid-escape",
+      "avoid-template"
     ],
     "radix": true,
     "semicolon": [

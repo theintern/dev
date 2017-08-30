@@ -28,15 +28,15 @@ function cleanup() {
 }
 
 function printUsage() {
-	echo(`Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n`);
+	echo('Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n');
 	echo('\n');
-	echo(`  help        Displays this message\n`);
-	echo(`  branch      Branch to release; defaults to the current branch.\n`);
-	echo(`  version     Version to release; defaults to what is listed in the\n`);
-	echo(`              package.json in the branch. It should only be specified\n`);
-	echo(`              for pre-releases\n`);
-	echo(`  prerelease  A prerelease tag to attach to the version, like 'alpha'\n`);
-	echo(`              or 'beta'.\n`);
+	echo('  help        Displays this message\n');
+	echo('  branch      Branch to release; defaults to the current branch.\n');
+	echo('  version     Version to release; defaults to what is listed in the\n');
+	echo('              package.json in the branch. It should only be specified\n');
+	echo('              for pre-releases\n');
+	echo("  prerelease  A prerelease tag to attach to the version, like 'alpha'\n");
+	echo("              or 'beta'.\n");
 }
 
 async function prompt(...args: any[]) {
@@ -126,7 +126,7 @@ if (!npmTag) {
 	try {
 		if (branch !== 'master') {
 			let question = `Are you sure you want to create a release from branch ${branch}?\n` +
-				`Enter "y" to continue, any other key to abort.\n` +
+				'Enter "y" to continue, any other key to abort.\n' +
 				'> ';
 
 			if (await prompt(question) !== 'y') {

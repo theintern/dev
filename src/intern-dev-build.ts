@@ -129,7 +129,7 @@ function createFileWatcher(patterns: string[], dstDir: string | string[]): FSWat
 			watcher.on('unlink', (file: string) => remove(file, dstDir));
 		})
 		.on('error', (error: Error) => {
-			log(red(`!!`), 'Watcher error:', error);
+			log(red('!!'), 'Watcher error:', error);
 		});
 
 	return watcher;
