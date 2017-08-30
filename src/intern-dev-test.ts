@@ -23,7 +23,7 @@ let mode = 'node';
 let config = 'tests/intern.js';
 
 function run(runner: string) {
-	let command = [ `intern-${runner}` ].concat(args);
+	let command = [`intern-${runner}`].concat(args);
 
 	if (!args.some(arg => arg.indexOf('config=') === 0)) {
 		command.push('config=' + join(buildDir, config));
@@ -32,12 +32,10 @@ function run(runner: string) {
 	log('Running tests');
 	try {
 		exec(`${command.join(' ')}`, { silent: false });
-	}
-	catch (error) {
+	} catch (error) {
 		if (error.name === 'ExecError') {
 			process.exitCode = 1;
-		}
-		else {
+		} else {
 			throw error;
 		}
 	}

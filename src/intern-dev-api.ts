@@ -47,8 +47,7 @@ function scrubPaths(reflection: any) {
 				scrubPaths(item);
 			}
 		}
-	}
-	else if (typeof reflection === 'object') {
+	} else if (typeof reflection === 'object') {
 		const keys = Object.keys(reflection);
 		for (let key of keys) {
 			const value = reflection[key];
@@ -58,8 +57,7 @@ function scrubPaths(reflection: any) {
 
 			if (key === 'originalName' || key === 'fileName') {
 				reflection[key] = scrubPath(value);
-			}
-			else if (typeof value === 'object') {
+			} else if (typeof value === 'object') {
 				scrubPaths(value);
 			}
 		}

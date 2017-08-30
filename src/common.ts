@@ -1,6 +1,15 @@
 import { readFileSync } from 'fs';
 import { ChildProcess } from 'child_process';
-import { cp, echo, exec as shellExec, mkdir, sed, test, ExecOptions, ExecOutputReturnValue } from 'shelljs';
+import {
+	cp,
+	echo,
+	exec as shellExec,
+	mkdir,
+	sed,
+	test,
+	ExecOptions,
+	ExecOutputReturnValue
+} from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize, resolve } from 'path';
 
@@ -29,7 +38,10 @@ export interface FilePattern {
 /**
  * Compile a project
  */
-export function compile(tsconfig: string, watch = false): ExecOutputReturnValue | ChildProcess {
+export function compile(
+	tsconfig: string,
+	watch = false
+): ExecOutputReturnValue | ChildProcess {
 	let cmd = `tsc -p "${tsconfig}"`;
 	let opts: ExecOptions = {};
 	if (watch) {
@@ -50,13 +62,12 @@ export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
 		if (typeof pattern !== 'string') {
 			options.cwd = pattern.base;
 			filePattern = pattern.pattern;
-		}
-		else {
+		} else {
 			options.cwd = '.';
 			filePattern = pattern;
 		}
 
-		glob(filePattern, options).forEach(function (filename) {
+		glob(filePattern, options).forEach(function(filename) {
 			const dst = join(outDir, filename);
 			const dstDir = dirname(dst);
 			if (!test('-d', dstDir)) {
@@ -84,7 +95,7 @@ export function exec(command: string, options?: ExecOptions) {
 	if (options.silent == null) {
 		options.silent = true;
 	}
-	const result = <ExecReturnValue> shellExec(command, options);
+	const result = <ExecReturnValue>shellExec(command, options);
 	if (result.code) {
 		throw new ExecError(command, result.code, result.stdout, result.stderr);
 	}
@@ -96,9 +107,15 @@ export function exec(command: string, options?: ExecOptions) {
  * source file to be a sibling of the compiled file.
  */
 export function fixSourceMaps() {
-	globSync(join(buildDir, '**', '*.js.map'), { nodir: true }).forEach(filename => {
-		sed('-i', /("sources":\[")(.*?)("\])/,
-			`$1${basename(filename, '.js.map')}.ts$3`, filename);
+	globSync(join(buildDir, '**', '*.js.map'), {
+		nodir: true
+	}).forEach(filename => {
+		sed(
+			'-i',
+			/("sources":\[")(.*?)("\])/,
+			`$1${basename(filename, '.js.map')}.ts$3`,
+			filename
+		);
 	});
 }
 
@@ -109,7 +126,7 @@ export function getConfigs(): string[] {
 	if (internDev && internDev.configs) {
 		return internDev.configs;
 	}
-	return [ 'tsconfig.json' ].concat(glob('*/**/tsconfig.json'));
+	return ['tsconfig.json'].concat(glob('*/**/tsconfig.json'));
 }
 
 /**
@@ -130,7 +147,7 @@ export function glob(pattern: string, options?: IOptions) {
 	}
 
 	if (!('ignore' in options)) {
-		let globIgnore = [ 'node_modules/**', `${buildDir}/**` ];
+		let globIgnore = ['node_modules/**', `${buildDir}/**`];
 		if (internDev && internDev.ignore) {
 			globIgnore = globIgnore.concat(internDev.ignore);
 		}
@@ -145,7 +162,9 @@ export function glob(pattern: string, options?: IOptions) {
  */
 export function lint(tsconfigFile: string) {
 	// Use the tslint file from this project if the project doesn't have one of its own
-	let tslintJson = test('-f', 'tslint.json') ? 'tslint.json' : resolve(join(__dirname, 'tslint.json'));
+	let tslintJson = test('-f', 'tslint.json')
+		? 'tslint.json'
+		: resolve(join(__dirname, 'tslint.json'));
 	return exec(`tslint -c "${tslintJson}" --project "${tsconfigFile}"`);
 }
 
@@ -171,8 +190,11 @@ export function readJsonFile(filename: string) {
 /**
  * Run stylus
  */
-export function stylus(files: string[], watch = false): ExecReturnValue | ChildProcess {
-	let cmd = `stylus '${files.join('\',\'')}'`;
+export function stylus(
+	files: string[],
+	watch = false
+): ExecReturnValue | ChildProcess {
+	let cmd = `stylus '${files.join("','")}'`;
 	let opts: ExecOptions = {};
 	if (watch) {
 		cmd += ' --watch';
@@ -184,7 +206,10 @@ export function stylus(files: string[], watch = false): ExecReturnValue | ChildP
 /**
  * Run webpack
  */
-export function webpack(config: string, watch = false): ExecReturnValue | ChildProcess {
+export function webpack(
+	config: string,
+	watch = false
+): ExecReturnValue | ChildProcess {
 	let cmd = `webpack --config "${config}"`;
 	let opts: ExecOptions = {};
 	if (watch) {
@@ -214,7 +239,8 @@ function getText(text: string) {
 }
 
 function removeComments(text: string) {
-	let state: 'string' | 'block-comment' | 'line-comment' | 'default' = 'default';
+	let state: 'string' | 'block-comment' | 'line-comment' | 'default' =
+		'default';
 	let i = 0;
 
 	// Create an array of chars from the text, the blank out anything in a comment
@@ -228,12 +254,10 @@ function removeComments(text: string) {
 					chars[i + 1] = ' ';
 					state = 'default';
 					i += 2;
-				}
-				else if (chars[i] !== '\n') {
+				} else if (chars[i] !== '\n') {
 					chars[i] = ' ';
 					i += 1;
-				}
-				else {
+				} else {
 					i += 1;
 				}
 				break;
@@ -241,8 +265,7 @@ function removeComments(text: string) {
 			case 'line-comment':
 				if (chars[i] === '\n') {
 					state = 'default';
-				}
-				else {
+				} else {
 					chars[i] = ' ';
 				}
 				i += 1;
@@ -252,14 +275,11 @@ function removeComments(text: string) {
 				if (chars[i] === '"') {
 					state = 'default';
 					i += 1;
-				}
-				else if (chars[i] === '\\' && chars[i + 1] === '\\') {
+				} else if (chars[i] === '\\' && chars[i + 1] === '\\') {
 					i += 2;
-				}
-				else if (chars[i] === '\\' && chars[i + 1] === '"') {
+				} else if (chars[i] === '\\' && chars[i + 1] === '"') {
 					i += 2;
-				}
-				else {
+				} else {
 					i += 1;
 				}
 				break;
@@ -268,20 +288,17 @@ function removeComments(text: string) {
 				if (chars[i] === '"') {
 					state = 'string';
 					i += 1;
-				}
-				else if (chars[i] === '/' && chars[i + 1] === '*') {
+				} else if (chars[i] === '/' && chars[i + 1] === '*') {
 					chars[i] = ' ';
 					chars[i + 1] = ' ';
 					state = 'block-comment';
 					i += 2;
-				}
-				else if (chars[i] === '/' && chars[i + 1] === '/') {
+				} else if (chars[i] === '/' && chars[i + 1] === '/') {
 					chars[i] = ' ';
 					chars[i + 1] = ' ';
 					state = 'line-comment';
 					i += 2;
-				}
-				else {
+				} else {
 					i += 1;
 				}
 		}
