@@ -198,6 +198,9 @@ if (!npmTag) {
 		// Determine the proper version numbers for release and for repo
 		// post-release
 		if (userVersion) {
+			if (semver.gte(packageJson.version, userVersion)) {
+				throw new Error('Provided version must be >= current version');
+			}
 			version = userVersion;
 		} else {
 			// Use the version from package.json in the currently checked out
@@ -250,10 +253,6 @@ if (!npmTag) {
 					<any>preTag
 				)!;
 			}
-		}
-
-		if (semver.gte(packageJson.version, version)) {
-			throw new Error('Provided version must be >= current version');
 		}
 
 		// Check that the version hasn't already been tagged
