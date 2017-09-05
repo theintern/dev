@@ -75,17 +75,20 @@ let branch = exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
 // the version to be released
 let version: string;
 // the tag that will be applied to the package in the npm registry
-let npmTag: string;
+let npmTag: string | undefined;
 // the next pre-release version that will be set on the original branch after
 // tagging
 let preVersion: string;
 // a prerelease tag to attach to the version
-let preTag: string;
+let preTag: string | undefined;
 // the name of the new release branch that should be created if this is not a
 // patch release
-let newBranch: string;
+let newBranch: string | undefined;
 // the pre-release version that will be set on the minor release branch
-let branchVersion: string;
+let branchVersion: string | undefined;
+
+// the version provided by the user
+let userVersion: string | undefined;
 
 process.argv.slice(2).forEach(arg => {
 	if (arg === 'help') {
@@ -100,7 +103,7 @@ process.argv.slice(2).forEach(arg => {
 			break;
 
 		case 'v':
-			version = value;
+			userVersion = value;
 			break;
 
 		case 't':
@@ -124,7 +127,7 @@ let exitCode = 0;
 let pushBranches = [branch];
 
 if (!npmTag) {
-	if (preTag || version) {
+	if (preTag || userVersion) {
 		// If a prerelease tag or custom version were specified, this will be
 		// the 'next' version
 		npmTag = 'next';
@@ -167,8 +170,8 @@ if (!npmTag) {
 		}
 
 		let message = `Creating a new release from branch ${branch}`;
-		if (version) {
-			message += ` with version override ${version}`;
+		if (userVersion) {
+			message += ` with version override ${userVersion}`;
 		}
 		log(`${message}.`);
 
@@ -190,7 +193,9 @@ if (!npmTag) {
 
 		// Determine the proper version numbers for release and for repo
 		// post-release
-		if (!version) {
+		if (userVersion) {
+			version = userVersion;
+		} else {
 			// Use the version from package.json in the currently checked out
 			// branch
 			version = packageJson.version;
@@ -213,7 +218,7 @@ if (!npmTag) {
 					.stdout.replace(/\s+$/, '')
 					.split('\n');
 				const tags = tagLines.map(
-					line => /refs\/tags\/(.*)/.exec(line)[1]
+					line => /refs\/tags\/(.*)/.exec(line)![1]
 				);
 				const sameVersionTags = tags.filter(tag => {
 					try {
@@ -221,15 +226,15 @@ if (!npmTag) {
 							semver.major(tag) === semver.major(version) &&
 							semver.minor(tag) === semver.minor(version) &&
 							semver.patch(tag) === semver.patch(version) &&
-							semver.prerelease(tag)[0] === preTag
+							semver.prerelease(tag)![0] === preTag
 						);
 					} catch (error) {
 						return false;
 					}
 				});
 				sameVersionTags.sort((a, b) => {
-					const preA = Number(semver.prerelease(a)[1]);
-					const preB = Number(semver.prerelease(b)[1]);
+					const preA = Number(semver.prerelease(a)![1]);
+					const preB = Number(semver.prerelease(b)![1]);
 					return preB - preA;
 				});
 
@@ -239,12 +244,12 @@ if (!npmTag) {
 					sameVersionTags[0] || version,
 					'prerelease',
 					<any>preTag
-				);
+				)!;
 			}
-		} else {
-			if (semver.gte(packageJson.version, version)) {
-				throw new Error('Provided version must be >= current version');
-			}
+		}
+
+		if (semver.gte(packageJson.version, version)) {
+			throw new Error('Provided version must be >= current version');
 		}
 
 		// Check that the version hasn't already been tagged
@@ -295,7 +300,7 @@ if (!npmTag) {
 		);
 
 		// If this is a major/minor release, we also create a new branch for it
-		if (newBranch) {
+		if (newBranch && branchVersion) {
 			log(`Creating new branch ${newBranch}...`);
 			// Create the new branch starting at the tagged release version
 			exec(`git checkout -b ${newBranch} ${version}`);

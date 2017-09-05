@@ -47,7 +47,7 @@ if (internDev && internDev.testConfig) {
 }
 
 if (args[0] in modes) {
-	mode = args.shift();
+	mode = args.shift()!;
 }
 
 modes[mode]();

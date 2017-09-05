@@ -12,6 +12,7 @@ import {
 } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize, resolve } from 'path';
+import { sys, readConfigFile, parseJsonConfigFileContent } from 'typescript';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
 	stdout: string;
@@ -25,9 +26,10 @@ const packageJson = readJsonFile('package.json');
 const internDev = packageJson.internDev || {};
 export { internDev };
 
-const tsconfig = readJsonFile('tsconfig.json');
-// normalize the buildDir because tsconfig likes './', but glob (used later) does not
-const buildDir = normalize(tsconfig.compilerOptions.outDir);
+const tsconfig = readTsconfigFile('tsconfig.json');
+// normalize the buildDir because tsconfig likes './', but glob (used later)
+// does not
+const buildDir = normalize(tsconfig.options.outDir!);
 export { buildDir, tsconfig };
 
 export interface FilePattern {
@@ -74,13 +76,14 @@ export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
 				mkdir('-p', dstDir);
 			}
 			log(`Copying ${filename} to ${dst}`);
-			cp(join(options.cwd, filename), dst);
+			cp(join(options.cwd!, filename), dst);
 		});
 	});
 }
 
 /**
- * Synchronously run a command. Exit if the command fails. Otherwise return an object:
+ * Synchronously run a command. Exit if the command fails. Otherwise return an
+ * object:
  *
  *   {
  *     code: exit code
@@ -161,7 +164,8 @@ export function glob(pattern: string, options?: IOptions) {
  * Lint a project
  */
 export function lint(tsconfigFile: string) {
-	// Use the tslint file from this project if the project doesn't have one of its own
+	// Use the tslint file from this project if the project doesn't have one of
+	// its own
 	let tslintJson = test('-f', 'tslint.json')
 		? 'tslint.json'
 		: resolve(join(__dirname, 'tslint.json'));
@@ -183,8 +187,32 @@ export function parseJson(text: string) {
 	return JSON.parse(textToParse);
 }
 
+/**
+ * Read and parse a JSON file
+ */
 export function readJsonFile(filename: string) {
 	return parseJson(readFileSync(filename, { encoding: 'utf8' }));
+}
+
+/**
+ * Read a tsconfig file, which may extend other tsconfig files
+ */
+export function readTsconfigFile(filename: string) {
+	let data = readConfigFile(filename, (name: string) =>
+		readFileSync(name, { encoding: 'utf8' })
+	);
+	if (data.error) {
+		throw data.error;
+	}
+	const config = parseJsonConfigFileContent(
+		data.config,
+		sys,
+		dirname(resolve(filename))
+	);
+	if (config.errors.length > 0) {
+		throw new Error(<string>config.errors[0].messageText);
+	}
+	return config;
 }
 
 /**
@@ -194,7 +222,7 @@ export function stylus(
 	files: string[],
 	watch = false
 ): ExecReturnValue | ChildProcess {
-	let cmd = `stylus '${files.join("','")}'`;
+	let cmd = `stylus "${files.join('","')}"`;
 	let opts: ExecOptions = {};
 	if (watch) {
 		cmd += ' --watch';
@@ -243,7 +271,8 @@ function removeComments(text: string) {
 		'default';
 	let i = 0;
 
-	// Create an array of chars from the text, the blank out anything in a comment
+	// Create an array of chars from the text, the blank out anything in a
+	// comment
 	const chars = text.split('');
 
 	while (i < chars.length) {

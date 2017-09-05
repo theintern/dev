@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 
 import { rm } from 'shelljs';
-import { dirname, join, relative } from 'path';
-import { getConfigs, log, readJsonFile } from './common';
+import { dirname, isAbsolute, join, relative } from 'path';
+import { getConfigs, log, readTsconfigFile } from './common';
 
 getConfigs().forEach(configFile => {
-	const config = readJsonFile(configFile);
-	let outDir = config.compilerOptions && config.compilerOptions.outDir;
+	const config = readTsconfigFile(configFile);
+	let outDir = config.options && config.options.outDir;
 	if (outDir) {
-		outDir = relative(process.cwd(), join(dirname(configFile), outDir));
+		if (!isAbsolute(outDir)) {
+			outDir = join(dirname(configFile), outDir);
+		}
+		outDir = relative(process.cwd(), outDir);
 		log(`Removing ${outDir}`);
 		rm('-rf', outDir);
 	}
