@@ -6,6 +6,12 @@
 		"moduleResolution": "node",
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+		"plugins": [
+			{
+				"name": "tslint-language-service",
+				"alwaysShowRuleFailuresAsWarnings": true
+			}
+		],
 		"preserveConstEnums": true,
 		"removeComments": true,
 		"sourceMap": true,
