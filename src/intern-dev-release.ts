@@ -151,8 +151,12 @@ if (!npmTag) {
 			}
 		}
 
-		const output = exec('git config receive.denyCurrentBranch').stdout;
-		if (output.indexOf('updateInstead') !== 0) {
+		let output: string | undefined;
+		try {
+			output = exec('git config receive.denyCurrentBranch').stdout;
+		} catch (_error) {}
+
+		if (!output || output.indexOf('updateInstead') !== 0) {
 			throw new Error(
 				'Repository should have receive.denyCurrentBranch set to "updateInstead"'
 			);
