@@ -11,7 +11,7 @@ import {
 	ExecOutputReturnValue
 } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
-import { basename, dirname, join, normalize, resolve } from 'path';
+import { basename, dirname, join, normalize, relative, resolve } from 'path';
 import { sys, readConfigFile, parseJsonConfigFileContent } from 'typescript';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
@@ -28,8 +28,9 @@ export { internDev };
 
 const tsconfig = readTsconfigFile('tsconfig.json');
 // normalize the buildDir because tsconfig likes './', but glob (used later)
+//
 // does not
-const buildDir = normalize(tsconfig.options.outDir!);
+const buildDir = relative(process.cwd(), normalize(tsconfig.options.outDir!));
 export { buildDir, tsconfig };
 
 export interface FilePattern {
