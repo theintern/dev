@@ -205,6 +205,11 @@ export function readTsconfigFile(filename: string) {
 	if (data.error) {
 		throw data.error;
 	}
+
+	// TS will sometimes normalize config paths to lowercase. This can cause
+	// issues with path functions like path.resolve.
+	sys.useCaseSensitiveFileNames = true;
+
 	const config = parseJsonConfigFileContent(
 		data.config,
 		sys,
