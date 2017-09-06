@@ -360,6 +360,22 @@ if (!npmTag) {
 		});
 		exec('git push origin --tags');
 
+		// Push the new commit and tags to the main repo
+		process.chdir(rootDir);
+		let remote: string | undefined;
+		for (const line of exec('git remote -v').stdout.split(/\n/)) {
+			if (/github.com:theintern\/.*\(push\)/.test(line)) {
+				remote = line.split('\t')[0];
+				break;
+			}
+		}
+		if (!remote) {
+			log('No origin remote; not pushing');
+		} else {
+			exec(`git push ${remote}`);
+			exec(`git push ${remote} --tags`);
+		}
+
 		log('All done! Yay!');
 	} catch (error) {
 		if (error.message !== 'Aborted') {
