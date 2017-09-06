@@ -90,7 +90,7 @@ let branchVersion: string | undefined;
 // the version provided by the user
 let userVersion: string | undefined;
 
-process.argv.slice(2).forEach(arg => {
+for (const arg of process.argv.slice(2)) {
 	if (arg === 'help') {
 		printUsage();
 		process.exit(0);
@@ -119,7 +119,7 @@ process.argv.slice(2).forEach(arg => {
 			printUsage();
 			process.exit(1);
 	}
-});
+}
 
 const rootDir = process.cwd();
 const tmpDir = '_publish';
@@ -257,11 +257,11 @@ if (!npmTag) {
 
 		// Check that the version hasn't already been tagged
 		const tags = exec('git tag').stdout;
-		tags.split('\n').forEach(function(tag) {
+		for (const tag of tags.split('\n')) {
 			if (tag === version) {
 				throw new Error('Version ' + tag + ' has already been tagged');
 			}
-		});
+		}
 
 		// Pre-release or non-branching updates
 		if (
@@ -355,9 +355,9 @@ if (!npmTag) {
 		exec(`npm publish --tag ${npmTag} --access public`);
 
 		// Update the original repo with the new branch and tag pointers
-		pushBranches.map(function(branch) {
+		for (const branch of pushBranches) {
 			exec(`git push origin ${branch}`);
-		});
+		}
 		exec('git push origin --tags');
 
 		// Push the new commit and tags to the main repo
