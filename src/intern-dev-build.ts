@@ -25,30 +25,6 @@ const args = process.argv.slice(2);
 const watchMode = args[0] === 'watch';
 
 // -----------------------------------------------------------------
-// Typescript
-// -----------------------------------------------------------------
-try {
-	getConfigs().forEach(tsconfig => {
-		log(`Linting ${dirname(tsconfig)}`);
-		lint(tsconfig);
-
-		log(`Compiling ${dirname(tsconfig)}`);
-		const tag = `tsc:${dirname(tsconfig)}`;
-		if (watchMode) {
-			const proc = spawn('tsc', ['-p', tsconfig, '--watch']);
-			watchProcess(tag, proc, /\berror TS\d+:/);
-		}
-		else {
-			const proc = spawnSync('tsc', ['-p', tsconfig]);
-			logProcess(tag, proc, /\berror TS\d+:/);
-		}
-	});
-}
-catch (error) {
-	handleError(error);
-}
-
-// -----------------------------------------------------------------
 // Stylus
 // -----------------------------------------------------------------
 if (internDev.stylus) {
@@ -82,6 +58,30 @@ try {
 		copyAll(resources[dest], dest);
 		if (watchMode) {
 			createFileWatcher(resources[dest], dest);
+		}
+	});
+}
+catch (error) {
+	handleError(error);
+}
+
+// -----------------------------------------------------------------
+// Typescript
+// -----------------------------------------------------------------
+try {
+	getConfigs().forEach(tsconfig => {
+		log(`Linting ${dirname(tsconfig)}`);
+		lint(tsconfig);
+
+		log(`Compiling ${dirname(tsconfig)}`);
+		const tag = `tsc:${dirname(tsconfig)}`;
+		if (watchMode) {
+			const proc = spawn('tsc', ['-p', tsconfig, '--watch']);
+			watchProcess(tag, proc, /\berror TS\d+:/);
+		}
+		else {
+			const proc = spawnSync('tsc', ['-p', tsconfig]);
+			logProcess(tag, proc, /\berror TS\d+:/);
 		}
 	});
 }
