@@ -47,7 +47,8 @@
     "build": "npm run clean && ts-node ./src/intern-dev-build.ts",
     "clean": "ts-node ./src/intern-dev-clean.ts",
     "release": "npm run lint && ts-node ./src/intern-dev-release.ts",
-    "lint": "ts-node ./src/intern-dev-lint.ts"
+    "lint": "ts-node ./src/intern-dev-lint.ts",
+    "devpack": "ts-node ./src/intern-dev-build && cd _build/src && npm pack && mv *.tgz ../../"
   },
   "internDev": {
     "resources": {

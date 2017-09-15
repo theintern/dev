@@ -11,3 +11,4 @@ _publish/
 src/**/*.js
 benchmark.json
 baselines.json
+*.tgz
