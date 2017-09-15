@@ -221,9 +221,15 @@ if (!npmTag) {
 				version += `-${preTag}`;
 
 				// Get all the x.y.z-preTag.w versions
-				const tagLines = exec('git show-ref --tags --abbrev')
-					.stdout.replace(/\s+$/, '')
-					.split('\n');
+				let tagLines: string[] | undefined;
+				try {
+					tagLines = exec('git show-ref --tags --abbrev')
+						.stdout.replace(/\s+$/, '')
+						.split('\n');
+				} catch (error) {
+					// No existing tags
+					tagLines = [];
+				}
 				const tags = tagLines.map(
 					line => /refs\/tags\/(.*)/.exec(line)![1]
 				);
