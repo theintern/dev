@@ -71,15 +71,22 @@ export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
 		}
 
 		glob(filePattern, options).forEach(function(filename) {
-			const dst = join(outDir, filename);
-			const dstDir = dirname(dst);
-			if (!test('-d', dstDir)) {
-				mkdir('-p', dstDir);
-			}
-			log(`Copying ${filename} to ${dst}`);
-			cp(join(options.cwd!, filename), dst);
+			log(`Copying ${filename} to ${outDir}`);
+			copyFile(join(options.cwd!, filename), outDir);
 		});
 	});
+}
+
+/**
+ * Copy a file to a directory
+ */
+export function copyFile(filename: string, outDir: string) {
+	const dst = join(outDir, filename);
+	const dstDir = dirname(dst);
+	if (!test('-d', dstDir)) {
+		mkdir('-p', dstDir);
+	}
+	cp(filename, dst);
 }
 
 /**
