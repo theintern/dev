@@ -22,6 +22,7 @@ import { buildDir, exec, internDev, log } from './common';
 import { join } from 'path';
 import { createInterface } from 'readline';
 import { red } from 'chalk';
+import { spawnSync } from 'child_process';
 
 function cleanup() {
 	log('Cleaning up...');
@@ -358,7 +359,21 @@ if (!npmTag) {
 		// Publish the package from <rootDir>/<tmpDir>/<publishDir> or
 		// <rootDir>/<tmpDir>/<buildDir>
 		process.chdir(publishDir);
-		exec(`npm publish --tag ${npmTag} --access public`);
+
+		// Publish using spawn and inheriting stdio so user can supply OTP if
+		// 2-factor auth is enabled
+		const pubResult = spawnSync(
+			'npm',
+			['publish', '--tag', npmTag, '--access', 'public'],
+			{
+				stdio: 'inherit'
+			}
+		);
+		if (pubResult.error) {
+			throw pubResult.error;
+		} else if (pubResult.status !== 0) {
+			throw new Error(`npm publish failed: ${pubResult.status}`);
+		}
 
 		// Update the original repo with the new branch and tag pointers
 		for (const branch of pushBranches) {
