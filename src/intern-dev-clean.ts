@@ -14,9 +14,9 @@ getConfigs()
 		return outDir;
 	})
 	.filter(outDir => Boolean(outDir))
-	.reduce((outDirs: string[], dir: string) => {
-		if (outDirs.indexOf(dir) === -1) {
-			return [ ...outDirs, dir ];
+	.reduce((outDirs: string[], dir: string | undefined) => {
+		if (dir && outDirs.indexOf(dir) === -1) {
+			return [...outDirs, dir];
 		}
 		return outDirs;
 	}, [])
