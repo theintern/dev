@@ -19,7 +19,7 @@
     "semver": "~5.4.1",
     "shelljs": "~0.7.8",
     "tslint": "~5.7.0",
-    "typedoc": "~0.8.0",
+    "typedoc": "~0.9.0",
     "typescript": "~2.6.1"
   },
   "devDependencies": {
