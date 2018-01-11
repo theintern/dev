@@ -35,11 +35,16 @@ const watchMode = args[0] === 'watch';
 // -----------------------------------------------------------------
 if (internDev.stylus) {
 	try {
+		const stylus = require.resolve('stylus/bin/stylus');
 		if (watchMode) {
-			const proc = spawn('stylus', internDev.stylus.concat('--watch'));
+			const proc = spawn('node', [
+				stylus,
+				...internDev.stylus,
+				'--watch'
+			]);
 			watchProcess('stylus', proc);
 		} else {
-			const proc = spawnSync('stylus', internDev.stylus);
+			const proc = spawnSync('node', [stylus, ...internDev.stylus]);
 			logProcess('stylus', proc);
 		}
 	} catch (error) {
@@ -78,11 +83,12 @@ try {
 
 		log(`Compiling ${dirname(tsconfig)}`);
 		const tag = `tsc:${dirname(tsconfig)}`;
+		const tsc = require.resolve('typescript/bin/tsc');
 		if (watchMode) {
-			const proc = spawn('tsc', ['-p', tsconfig, '--watch']);
+			const proc = spawn('node', [tsc, '-p', tsconfig, '--watch']);
 			watchProcess(tag, proc, /\berror TS\d+:/);
 		} else {
-			const proc = spawnSync('tsc', ['-p', tsconfig]);
+			const proc = spawnSync('node', [tsc, '-p', tsconfig]);
 			logProcess(tag, proc, /\berror TS\d+:/);
 		}
 	});
@@ -96,15 +102,21 @@ try {
 const webpackConfig = glob(internDev.webpack || 'webpack.config.*')[0];
 if (webpackConfig) {
 	try {
+		const webpack = require.resolve('webpack/bin/webpack');
 		if (watchMode) {
-			const proc = spawn('webpack', [
+			const proc = spawn('node', [
+				webpack,
 				'--config',
 				webpackConfig,
 				'--watch'
 			]);
 			watchProcess('webpack', proc, /^ERROR\b/);
 		} else {
-			const proc = spawnSync('webpack', ['--config', webpackConfig]);
+			const proc = spawnSync('node', [
+				webpack,
+				'--config',
+				webpackConfig
+			]);
 			logProcess('webpack', proc, /^ERROR\b/);
 		}
 	} catch (error) {

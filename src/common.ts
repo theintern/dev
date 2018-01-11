@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import { ChildProcess } from 'child_process';
 import {
 	cp,
 	echo,
@@ -36,22 +35,6 @@ export { buildDir, tsconfig };
 export interface FilePattern {
 	base: string;
 	pattern: string;
-}
-
-/**
- * Compile a project
- */
-export function compile(
-	tsconfig: string,
-	watch = false
-): ExecOutputReturnValue | ChildProcess {
-	let cmd = `tsc -p "${tsconfig}"`;
-	let opts: ExecOptions = {};
-	if (watch) {
-		cmd += ' --watch';
-		opts.async = true;
-	}
-	return exec(cmd, opts);
 }
 
 /**
@@ -177,7 +160,10 @@ export function lint(tsconfigFile: string) {
 	let tslintJson = test('-f', 'tslint.json')
 		? 'tslint.json'
 		: resolve(join(__dirname, 'tslint.json'));
-	return exec(`tslint -c "${tslintJson}" --project "${tsconfigFile}"`);
+	const tslint = require.resolve('tslint/bin/tslint');
+	return exec(
+		`node "${tslint}" -c "${tslintJson}" --project "${tsconfigFile}"`
+	);
 }
 
 /**
@@ -226,38 +212,6 @@ export function readTsconfigFile(filename: string) {
 		throw new Error(<string>config.errors[0].messageText);
 	}
 	return config;
-}
-
-/**
- * Run stylus
- */
-export function stylus(
-	files: string[],
-	watch = false
-): ExecReturnValue | ChildProcess {
-	let cmd = `stylus "${files.join('","')}"`;
-	let opts: ExecOptions = {};
-	if (watch) {
-		cmd += ' --watch';
-		opts.async = true;
-	}
-	return exec(cmd, opts);
-}
-
-/**
- * Run webpack
- */
-export function webpack(
-	config: string,
-	watch = false
-): ExecReturnValue | ChildProcess {
-	let cmd = `webpack --config "${config}"`;
-	let opts: ExecOptions = {};
-	if (watch) {
-		cmd += ' --watch';
-		opts.async = true;
-	}
-	return exec(cmd, opts);
 }
 
 export class ExecError extends Error {
