@@ -23,8 +23,8 @@ let mode = 'node';
 let config = 'tests/intern.js';
 
 function run(runner: string) {
-	const intern = require.resolve(`intern-${runner}`);
-	let command = ['node', `"${intern}"`].concat(args);
+	const intern = require.resolve(`intern/bin/intern-${runner}`);
+	let command = ['node', intern].concat(args);
 
 	if (!args.some(arg => arg.indexOf('config=') === 0)) {
 		command.push('config=' + join(buildDir, config));
