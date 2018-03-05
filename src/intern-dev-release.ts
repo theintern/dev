@@ -364,7 +364,15 @@ if (!npmTag) {
 		// 2-factor auth is enabled
 		const pubResult = spawnSync(
 			'npm',
-			['publish', '--tag', npmTag, '--access', 'public'],
+			[
+				'publish',
+				'--tag',
+				npmTag,
+				'--access',
+				'public',
+				'--registry',
+				'https://registry.npmjs.org'
+			],
 			{
 				stdio: 'inherit'
 			}
