@@ -54,7 +54,8 @@
     "resources": {
       "_build/src": [
         "tslint.json",
-        "tsconfig-base.json"
+        "tsconfig-base.json",
+        "prettier.config.js"
       ]
     }
   }
