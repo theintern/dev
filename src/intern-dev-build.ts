@@ -165,7 +165,7 @@ function copy(file: string, dstDir: string | string[]) {
 
 function handleError(error: Error) {
 	if (error.name === 'ExecError') {
-		log(red((<any>error).stdout));
+		log(red((<any>error).stderr || (<any>error).stdout));
 		process.exit((<any>error).code);
 	} else {
 		throw error;

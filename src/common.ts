@@ -11,6 +11,7 @@ import {
 } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize, relative, resolve } from 'path';
+import { spawnSync } from 'child_process';
 import { sys, readConfigFile, parseJsonConfigFileContent } from 'typescript';
 
 export interface ExecReturnValue extends ExecOutputReturnValue {
@@ -161,9 +162,7 @@ export function lint(tsconfigFile: string) {
 		? 'tslint.json'
 		: resolve(join(__dirname, 'tslint.json'));
 	const tslint = require.resolve('tslint/bin/tslint');
-	return exec(
-		`node "${tslint}" -c "${tslintJson}" --project "${tsconfigFile}"`
-	);
+	spawnSync('node', [tslint, '-c', tslintJson, '--project', tsconfigFile]);
 }
 
 /**
