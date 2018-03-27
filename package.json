@@ -18,7 +18,8 @@
     "glob": "~7.1.2",
     "semver": "~5.4.1",
     "shelljs": "~0.7.8",
-    "tslint": "~5.7.0",
+    "tslint": "~5.9.1",
+    "tslint-language-service": "~0.9.9",
     "typedoc": "~0.9.0",
     "typescript": "~2.6.2"
   },
