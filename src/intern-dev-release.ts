@@ -21,7 +21,7 @@ import { format } from 'util';
 import { buildDir, exec, internDev, log } from './common';
 import { join } from 'path';
 import { createInterface } from 'readline';
-import { red } from 'chalk';
+import chalk from 'chalk';
 import { spawnSync } from 'child_process';
 
 function cleanup() {
@@ -170,7 +170,7 @@ if (!npmTag) {
 			try {
 				exec('git diff-index --quiet HEAD');
 			} catch (error) {
-				log(red('Warning: You have uncommitted changes.'));
+				log(chalk.red('Warning: You have uncommitted changes.'));
 			}
 		}
 
@@ -409,7 +409,7 @@ if (!npmTag) {
 	} catch (error) {
 		if (error.message !== 'Aborted') {
 			// Something broke -- display an error
-			log(`${red(error.stack)}`);
+			log(`${chalk.red(error.stack)}`);
 			log('Aborted.');
 			exitCode = 1;
 		}

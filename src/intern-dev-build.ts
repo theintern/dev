@@ -14,7 +14,7 @@ import {
 } from 'child_process';
 import { watch, FSWatcher } from 'chokidar';
 import { dirname, join } from 'path';
-import { red } from 'chalk';
+import chalk from 'chalk';
 import { mkdir, rm } from 'shelljs';
 import { sync as glob } from 'glob';
 import {
@@ -102,7 +102,13 @@ try {
 const webpackConfig = glob(internDev.webpack || 'webpack.config.*')[0];
 if (webpackConfig) {
 	try {
-		const webpack = require.resolve('webpack/bin/webpack');
+		let webpack: string;
+		try {
+			webpack = require.resolve('webpack-cli/bin/webpack');
+		} catch (error) {
+			webpack = require.resolve('webpack/bin/webpack');
+		}
+
 		if (watchMode) {
 			const proc = spawn('node', [
 				webpack,
@@ -147,7 +153,7 @@ function createFileWatcher(
 			watcher.on('unlink', (file: string) => remove(file, dstDir));
 		})
 		.on('error', (error: Error) => {
-			log(red('!!'), 'Watcher error:', error);
+			log(chalk.red('!!'), 'Watcher error:', error);
 		});
 
 	return watcher;
@@ -165,7 +171,7 @@ function copy(file: string, dstDir: string | string[]) {
 
 function handleError(error: Error) {
 	if (error.name === 'ExecError') {
-		log(red((<any>error).stderr || (<any>error).stdout));
+		log(chalk.red((<any>error).stderr || (<any>error).stdout));
 		process.exit((<any>error).code);
 	} else {
 		throw error;
@@ -179,7 +185,7 @@ function logProcess(
 ) {
 	if (proc.status) {
 		logProcessOutput(name, proc.stdout || proc.stderr, /.*/);
-		log(red(`Error running ${name}, exiting...`));
+		log(chalk.red(`Error running ${name}, exiting...`));
 		process.exit(1);
 	} else {
 		logProcessOutput(name, proc.stdout, errorTest);
@@ -211,7 +217,9 @@ function logProcessOutput(
 					: line
 		);
 	if (errorTest) {
-		lines = lines.map(line => (errorTest.test(line) ? red(line) : line));
+		lines = lines.map(
+			line => (errorTest.test(line) ? chalk.red(line) : line)
+		);
 	}
 	lines.forEach(line => {
 		log(`[${name}] ${line}`);

@@ -2,7 +2,7 @@
 
 import { glob, lint, log } from './common';
 import { dirname } from 'path';
-import { red } from 'chalk';
+import chalk from 'chalk';
 
 glob('**/tsconfig.json').forEach(function(tsconfig) {
 	log(`Linting ${dirname(tsconfig)}`);
@@ -11,7 +11,7 @@ glob('**/tsconfig.json').forEach(function(tsconfig) {
 		lint(tsconfig);
 	} catch (error) {
 		if (error.name === 'ExecError') {
-			log(red(error.stdout));
+			log(chalk.red(error.stdout));
 			process.exitCode = error.code;
 		} else {
 			throw error;
