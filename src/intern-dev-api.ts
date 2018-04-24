@@ -5,6 +5,7 @@
 import { Application } from 'typedoc';
 import { isAbsolute, join, relative } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import chalk from 'chalk';
 import { log } from './common';
 
 // Use TypeDoc to generate an API description
@@ -17,6 +18,14 @@ const options = {
 const app = new Application(options);
 const inputFiles = app.options.read(options).inputFiles;
 const project = app.convert(inputFiles);
+
+if (!project) {
+	log(chalk.red('The project could not be analyzed.'));
+	const tsc = relative(process.cwd(), require.resolve('typescript/bin/tsc'));
+	log(chalk.red(`Try building with ${tsc} to see what's wrong.`));
+	process.exit(1);
+}
+
 const cwd = process.cwd();
 
 log('Scrubbing file paths');
