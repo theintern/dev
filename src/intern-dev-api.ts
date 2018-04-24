@@ -55,7 +55,11 @@ function scrubPaths(reflection: any) {
 				continue;
 			}
 
-			if (key === 'originalName' || key === 'fileName') {
+			if (
+				key === 'originalName' ||
+				key === 'fileName' ||
+				key === 'name'
+			) {
 				reflection[key] = scrubPath(value);
 			} else if (typeof value === 'object') {
 				scrubPaths(value);
@@ -66,7 +70,12 @@ function scrubPaths(reflection: any) {
 
 // Relativize a path, or return the input if it's not an absolute path
 function scrubPath(value: string) {
-	if (isAbsolute(value)) {
+	if (/".*"/.test(value)) {
+		const testValue = value.replace(/^"/, '').replace(/"$/, '');
+		if (isAbsolute(testValue)) {
+			return `"${relative(cwd, testValue)}"`;
+		}
+	} else if (isAbsolute(value)) {
 		return relative(cwd, value);
 	}
 	return value;
