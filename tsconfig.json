@@ -1,9 +1,9 @@
 {
-	"extends": "./tsconfig-base.json",
-	"compilerOptions": {
-		"outDir": "./_build",
-		"lib": ["dom", "es5", "es2015.promise", "es2015.collection"],
-		"rootDir": "."
-	},
-	"include": ["./src/**/*.ts"]
+  "extends": "./tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./_build",
+    "lib": ["dom", "es2015"],
+    "rootDir": "."
+  },
+  "include": ["./src/**/*.ts"]
 }

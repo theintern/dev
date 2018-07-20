@@ -12,23 +12,23 @@ import { log } from './common';
 // Use TypeDoc to generate an API description
 log('Generating API data');
 const options = {
-	tsconfig: 'tsconfig.json',
-	logger: 'none',
-	excludePrivate: true
+  tsconfig: 'tsconfig.json',
+  logger: 'none',
+  excludePrivate: true
 };
 const app = new Application(options);
 const inputFiles = app.options.read(options).inputFiles;
 const project = app.convert(inputFiles);
 
 if (!project) {
-	log(chalk.red('The project could not be analyzed.'));
-	const typedoc = require.resolve('typedoc');
-	const tsc = relative(
-		process.cwd(),
-		resolve('typescript/bin/tsc', { basedir: typedoc })
-	);
-	log(chalk.red(`Try building with ${tsc} to see what's wrong.`));
-	process.exit(1);
+  log(chalk.red('The project could not be analyzed.'));
+  const typedoc = require.resolve('typedoc');
+  const tsc = relative(
+    process.cwd(),
+    resolve('typescript/bin/tsc', { basedir: typedoc })
+  );
+  log(chalk.red(`Try building with ${tsc} to see what's wrong.`));
+  process.exit(1);
 }
 
 const cwd = process.cwd();
@@ -39,8 +39,8 @@ scrubPaths(project);
 const json = JSON.stringify(project.toObject(), null, '\t');
 
 if (!existsSync('docs')) {
-	log('Making docs directory');
-	mkdirSync('docs');
+  log('Making docs directory');
+  mkdirSync('docs');
 }
 
 const outFile = join('docs', 'api.json');
@@ -49,48 +49,44 @@ log(`Wrote API data to ${outFile}`);
 
 // Recursively walk an object, relativizing any paths
 function scrubPaths(reflection: any) {
-	if (reflection['__visited__']) {
-		return;
-	}
+  if (reflection['__visited__']) {
+    return;
+  }
 
-	reflection['__visited__'] = true;
+  reflection['__visited__'] = true;
 
-	if (Array.isArray(reflection)) {
-		for (let item of reflection) {
-			if (typeof item === 'object') {
-				scrubPaths(item);
-			}
-		}
-	} else if (typeof reflection === 'object') {
-		const keys = Object.keys(reflection);
-		for (let key of keys) {
-			const value = reflection[key];
-			if (value == null) {
-				continue;
-			}
+  if (Array.isArray(reflection)) {
+    for (let item of reflection) {
+      if (typeof item === 'object') {
+        scrubPaths(item);
+      }
+    }
+  } else if (typeof reflection === 'object') {
+    const keys = Object.keys(reflection);
+    for (let key of keys) {
+      const value = reflection[key];
+      if (value == null) {
+        continue;
+      }
 
-			if (
-				key === 'originalName' ||
-				key === 'fileName' ||
-				key === 'name'
-			) {
-				reflection[key] = scrubPath(value);
-			} else if (typeof value === 'object') {
-				scrubPaths(value);
-			}
-		}
-	}
+      if (key === 'originalName' || key === 'fileName' || key === 'name') {
+        reflection[key] = scrubPath(value);
+      } else if (typeof value === 'object') {
+        scrubPaths(value);
+      }
+    }
+  }
 }
 
 // Relativize a path, or return the input if it's not an absolute path
 function scrubPath(value: string) {
-	if (/".*"/.test(value)) {
-		const testValue = value.replace(/^"/, '').replace(/"$/, '');
-		if (isAbsolute(testValue)) {
-			return `"${relative(cwd, testValue)}"`;
-		}
-	} else if (isAbsolute(value)) {
-		return relative(cwd, value);
-	}
-	return value;
+  if (/".*"/.test(value)) {
+    const testValue = value.replace(/^"/, '').replace(/"$/, '');
+    if (isAbsolute(testValue)) {
+      return `"${relative(cwd, testValue)}"`;
+    }
+  } else if (isAbsolute(value)) {
+    return relative(cwd, value);
+  }
+  return value;
 }

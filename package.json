@@ -1,6 +1,6 @@
 {
   "name": "@theintern/dev",
-  "version": "0.7.4-pre",
+  "version": "0.8.0-pre",
   "description": "Development support scripts for Intern projects.",
   "repository": {
     "type": "git",
@@ -13,24 +13,34 @@
     "*.json"
   ],
   "dependencies": {
-    "chalk": "~2.4.0",
-    "chokidar": "~2.0.3",
+    "chalk": "~2.4.1",
+    "chokidar": "~2.0.4",
     "glob": "~7.1.2",
-    "resolve": "~1.7.1",
+    "lint-staged": "~7.2.0",
+    "pre-commit": "~1.2.2",
+    "prettier": "~1.13.7",
+    "resolve": "~1.8.1",
     "semver": "~5.5.0",
-    "shelljs": "~0.8.1",
-    "tslint": "~5.9.1",
+    "shelljs": "~0.8.2",
+    "tslint": "~5.11.0",
+    "tslint-config-prettier": "~1.14.0",
     "tslint-language-service": "~0.9.9",
     "typedoc": "~0.11.1",
-    "typescript": "~2.8.1"
+    "typescript": "~2.9.2"
   },
   "devDependencies": {
     "@types/chokidar": "~1.7.5",
     "@types/glob": "~5.0.35",
-    "@types/resolve": "0.0.7",
+    "@types/resolve": "~0.0.8",
     "@types/semver": "~5.5.0",
-    "@types/shelljs": "~0.7.8",
-    "ts-node": "~6.0.0"
+    "@types/shelljs": "~0.8.0",
+    "ts-node": "~7.0.0"
+  },
+  "peerDependencies": {
+    "lint-staged": "~7.2.0",
+    "pre-commit": "~1.2.2",
+    "prettier": "~1.13.7",
+    "tslib": "~1.9.3"
   },
   "bugs": "https://github.com/theintern/dev/issues",
   "keywords": [
@@ -50,7 +60,8 @@
     "clean": "ts-node ./src/intern-dev-clean.ts",
     "release": "npm run lint && ts-node ./src/intern-dev-release.ts",
     "lint": "ts-node ./src/intern-dev-lint.ts",
-    "devpack": "ts-node ./src/intern-dev-build && npm pack ./_build/src"
+    "devpack": "ts-node ./src/intern-dev-build && npm pack ./_build/src",
+    "precommit": "lint-staged"
   },
   "internDev": {
     "resources": {
@@ -60,5 +71,20 @@
         "prettier.config.js"
       ]
     }
-  }
+  },
+  "lint-staged": {
+    "src/**/*.{ts,json,css}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.ts": [
+      "prettier --write",
+      "git add"
+    ],
+    "ts*.json": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "pre-commit": "precommit"
 }
