@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": false,
+    "esModuleInterop": false,
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSources": true,
@@ -19,6 +19,6 @@
     "removeComments": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2015"
+    "target": "es5"
   }
 }
