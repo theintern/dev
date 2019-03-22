@@ -39,7 +39,7 @@ scrubPaths(project);
 log('Normalizing line endings');
 normalizeLineEndings(project);
 
-const json = JSON.stringify(project.toObject(), null, '\t');
+const json = JSON.stringify(project!.toObject(), null, '\t');
 
 if (!existsSync('docs')) {
   log('Making docs directory');
