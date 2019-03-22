@@ -36,6 +36,9 @@ const cwd = process.cwd();
 log('Scrubbing file paths');
 scrubPaths(project);
 
+log('Normalizing line endings');
+normalizeLineEndings(project);
+
 const json = JSON.stringify(project.toObject(), null, '\t');
 
 if (!existsSync('docs')) {
@@ -47,35 +50,26 @@ const outFile = join('docs', 'api.json');
 writeFileSync(outFile, json);
 log(`Wrote API data to ${outFile}`);
 
+// Recursively walk an object, normalizing any line endings in strings
+function normalizeLineEndings(reflection: any) {
+  walk(
+    reflection,
+    '__lenormalized__',
+    (_, value) => typeof value === 'string' && /\r\n/.test(value),
+    value => value.replace(/\r\n/g, '\n')
+  );
+}
+
 // Recursively walk an object, relativizing any paths
 function scrubPaths(reflection: any) {
-  if (reflection['__visited__']) {
-    return;
-  }
-
-  reflection['__visited__'] = true;
-
-  if (Array.isArray(reflection)) {
-    for (let item of reflection) {
-      if (typeof item === 'object') {
-        scrubPaths(item);
-      }
-    }
-  } else if (typeof reflection === 'object') {
-    const keys = Object.keys(reflection);
-    for (let key of keys) {
-      const value = reflection[key];
-      if (value == null) {
-        continue;
-      }
-
-      if (key === 'originalName' || key === 'fileName' || key === 'name') {
-        reflection[key] = scrubPath(value);
-      } else if (typeof value === 'object') {
-        scrubPaths(value);
-      }
-    }
-  }
+  walk(
+    reflection,
+    '__scrubbed__',
+    (key, value) =>
+      typeof value === 'string' &&
+      (key === 'originalName' || key === 'fileName' || key === 'name'),
+    scrubPath
+  );
 }
 
 // Relativize a path, or return the input if it's not an absolute path
@@ -83,10 +77,48 @@ function scrubPath(value: string) {
   if (/".*"/.test(value)) {
     const testValue = value.replace(/^"/, '').replace(/"$/, '');
     if (isAbsolute(testValue)) {
-      return `"${relative(cwd, testValue)}"`;
+      const newPath = `"${relative(cwd, testValue)}"`;
+      return newPath.replace(/\\/g, '/');
     }
   } else if (isAbsolute(value)) {
-    return relative(cwd, value);
+    const newPath = relative(cwd, value);
+    return newPath.replace(/\\/g, '/');
   }
   return value;
+}
+
+// Walk a project reflection, modifying values as necessary
+function walk(
+  reflection: any,
+  sentinel: string,
+  test: (key: string, value: any) => boolean,
+  modify: (value: any) => any
+) {
+  if (reflection[sentinel]) {
+    return;
+  }
+
+  reflection[sentinel] = true;
+
+  if (Array.isArray(reflection)) {
+    for (const item of reflection) {
+      if (typeof item === 'object') {
+        walk(item, sentinel, test, modify);
+      }
+    }
+  } else if (typeof reflection === 'object') {
+    const keys = Object.keys(reflection);
+    for (const key of keys) {
+      const value = reflection[key];
+      if (value == null) {
+        continue;
+      }
+
+      if (test(key, value)) {
+        reflection[key] = modify(value);
+      } else if (typeof value === 'object') {
+        walk(value, sentinel, test, modify);
+      }
+    }
+  }
 }
