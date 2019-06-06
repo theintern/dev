@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Typedoc 0.15 assumes some of the handlebars types will be available globally
+/// <reference types="handlebars" />
+
 // Generate API doc data for a project
 
 import { Application } from 'typedoc';
