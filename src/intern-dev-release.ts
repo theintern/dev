@@ -32,20 +32,19 @@ function cleanup() {
 
 function printUsage() {
   echo(
-    'Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease]\n'
+    `
+  Usage: intern-dev-release [help] [b=branch] [v=version] [p=prerelease] [t=tag]
+
+  help        Displays this message
+  branch      Branch to release; defaults to the current branch
+  tag         dist-tag to use when publishing; defaults to "latest"
+  version     Version to release; defaults to what is listed in the
+              package.json in the branch. It should only be specified
+              for pre-releases
+  prerelease  A prerelease tag to attach to the version, like "alpha"
+              beta
+  `.trim()
   );
-  echo('\n');
-  echo('  help        Displays this message\n');
-  echo('  branch      Branch to release; defaults to the current branch.\n');
-  echo('  version     Version to release; defaults to what is listed in the\n');
-  echo(
-    '              package.json in the branch. It should only be specified\n'
-  );
-  echo('              for pre-releases\n');
-  echo(
-    "  prerelease  A prerelease tag to attach to the version, like 'alpha'\n"
-  );
-  echo("              or 'beta'.\n");
 }
 
 async function prompt(...args: any[]) {
