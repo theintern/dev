@@ -25,7 +25,7 @@
     "tslint": "~5.17.0",
     "tslint-config-prettier": "~1.18.0",
     "typedoc": "~0.15.0-0",
-    "typescript": "~3.3.4000"
+    "typescript": "~3.5.1"
   },
   "devDependencies": {
     "@types/glob": "~7.1.1",
