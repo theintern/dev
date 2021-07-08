@@ -49,7 +49,7 @@ function printUsage() {
 
 async function prompt(...args: any[]) {
   const question = format(args[0], ...args.slice(1));
-  return new Promise<string>(function(resolve) {
+  return new Promise<string>(function (resolve) {
     rl.question(question, resolve);
   });
 }
@@ -66,7 +66,7 @@ function updatePackageVersion(version: string) {
 
 const rl = createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 let branch = exec('git rev-parse --abbrev-ref HEAD').stdout.replace(/\s+$/, '');
@@ -122,7 +122,7 @@ for (const arg of process.argv.slice(2)) {
 const rootDir = process.cwd();
 const tmpDir = '_publish';
 let exitCode = 0;
-let pushBranches = [branch];
+const pushBranches = [branch];
 
 if (!npmTag) {
   if (preTag || userVersion) {
@@ -136,10 +136,10 @@ if (!npmTag) {
   }
 }
 
-(async function main() {
+async function main() {
   try {
     if (branch !== 'master') {
-      let question =
+      const question =
         `Are you sure you want to create a release from branch ${branch}?\n` +
         'Enter "y" to continue, any other key to abort.\n' +
         '> ';
@@ -152,7 +152,9 @@ if (!npmTag) {
     let output: string | undefined;
     try {
       output = exec('git config receive.denyCurrentBranch').stdout;
-    } catch (_error) {}
+    } catch (_error) {
+      // ignored
+    }
 
     if (!output || output.indexOf('updateInstead') !== 0) {
       throw new Error(
@@ -228,8 +230,8 @@ if (!npmTag) {
           // No existing tags
           tagLines = [];
         }
-        const tags = tagLines.map(line => /refs\/tags\/(.*)/.exec(line)![1]);
-        const sameVersionTags = tags.filter(tag => {
+        const tags = tagLines.map((line) => /refs\/tags\/(.*)/.exec(line)![1]);
+        const sameVersionTags = tags.filter((tag) => {
           try {
             return (
               semver.major(tag) === semver.major(version) &&
@@ -249,9 +251,11 @@ if (!npmTag) {
 
         // Increment the latest x.y.z-preTag.w version _or_ the current
         // version
-        version = semver.inc(sameVersionTags[0] || version, 'prerelease', <any>(
-          preTag
-        ))!;
+        version = semver.inc(
+          sameVersionTags[0] || version,
+          'prerelease',
+          <any>preTag
+        )!;
       }
     }
 
@@ -269,21 +273,21 @@ if (!npmTag) {
       semver.patch(version) !== 0 ||
       semver.prerelease(version)
     ) {
-      preVersion = semver.inc(version, 'patch') + '-pre';
+      preVersion = `${semver.inc(version, 'patch') as string}-pre`;
     } else {
       // If the patch digit is a 0, this is a new major/minor release
       // The new branch we'll be making for this major/minor release
       newBranch = `${semver.major(version)}.${semver.minor(version)}`;
 
       // The full version of the next release in the new branch
-      branchVersion = semver.inc(version, 'patch') + '-pre';
+      branchVersion = `${semver.inc(version, 'patch') as string}-pre`;
 
       // The next version on master is usually going to be a minor
       // release; if the next version is to be a major release, the
       // package version will need to be manually updated in Git before
       // release e.g., current is
       // 2.1.0, pre will be 2.2.0-pre
-      preVersion = semver.inc(version, 'minor') + '-pre';
+      preVersion = `${semver.inc(version, 'minor') as string}-pre`;
     }
 
     // Set the package version to release version and commit the new release
@@ -329,7 +333,7 @@ if (!npmTag) {
     // Give the user a chance to verify everything is good before making any updates
     log('Done!');
 
-    let publishDir = internDev && internDev.publishDir;
+    let publishDir = (internDev && internDev.publishDir) as string;
     if (!publishDir) {
       publishDir = buildDir;
       if (existsSync(join(buildDir, 'src'))) {
@@ -339,9 +343,10 @@ if (!npmTag) {
 
     log(`Package to be published from ${tmpDir}/${publishDir}.`);
 
-    let question =
+    const question =
       'Please confirm packaging success, then enter "y" to publish to npm\n' +
-      `'${npmTag}', push tag '${version}', and upload. Enter any other key to bail.\n` +
+      `'${npmTag!}', push tag '${version}', and upload. ' +
+      'Enter any other key to bail.\n` +
       '> ';
 
     if ((await prompt(question)) !== 'y') {
@@ -360,20 +365,20 @@ if (!npmTag) {
       [
         'publish',
         '--tag',
-        npmTag,
+        npmTag!,
         '--access',
         'public',
         '--registry',
-        'https://registry.npmjs.org'
+        'https://registry.npmjs.org',
       ],
       {
-        stdio: 'inherit'
+        stdio: 'inherit',
       }
     );
     if (pubResult.error) {
       throw pubResult.error;
     } else if (pubResult.status !== 0) {
-      throw new Error(`npm publish failed: ${pubResult.status}`);
+      throw new Error(`npm publish failed: ${pubResult.status as number}`);
     }
 
     // Update the original repo with the new branch and tag pointers
@@ -413,4 +418,8 @@ if (!npmTag) {
 
     process.exit(exitCode);
   }
-})();
+}
+
+main().catch((error) => {
+  console.error(error);
+});

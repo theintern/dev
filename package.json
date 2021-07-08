@@ -1,6 +1,6 @@
 {
   "name": "@theintern/dev",
-  "version": "0.10.3-pre",
+  "version": "0.11.0",
   "description": "Development support scripts for Intern projects.",
   "repository": {
     "type": "git",
@@ -13,32 +13,34 @@
     "*.json"
   ],
   "dependencies": {
-    "chalk": "~2.4.2",
-    "chokidar": "~3.0.1",
+    "@typescript-eslint/eslint-plugin": "~4.28.2",
+    "@typescript-eslint/parser": "~4.28.2",
+    "chalk": "~4.1.1",
+    "chokidar": "~3.5.2",
+    "eslint": "~7.30.0",
     "glob": "~7.1.4",
-    "lint-staged": "~8.2.0",
+    "lint-staged": "~11.0.0",
     "pre-commit": "~1.2.2",
-    "prettier": "~1.17.1",
-    "resolve": "~1.11.1",
-    "semver": "~6.1.1",
+    "prettier": "~2.3.2",
+    "resolve": "~1.20.0",
+    "semver": "~7.3.5",
     "shelljs": "~0.8.3",
-    "tslint": "~5.17.0",
-    "tslint-config-prettier": "~1.18.0",
-    "typedoc": "~0.15.0-0",
-    "typescript": "~3.5.1"
+    "typedoc": "~0.21.2",
+    "typescript": "4.3.5"
   },
   "devDependencies": {
-    "@types/glob": "~7.1.1",
-    "@types/resolve": "~0.0.8",
-    "@types/semver": "~6.0.0",
-    "@types/shelljs": "~0.8.5",
-    "ts-node": "~8.2.0"
+    "@types/glob": "^7.1.1",
+    "@types/node": "^16.0.0",
+    "@types/resolve": "^1.20.0",
+    "@types/semver": "^7.3.6",
+    "@types/shelljs": "^0.8.5",
+    "ts-node": "^10.0.0"
   },
   "peerDependencies": {
-    "lint-staged": "^8.2.0",
+    "lint-staged": "^11.0.0",
     "pre-commit": "^1.2.2",
-    "prettier": "^1.17.0",
-    "tslib": "^1.9.3"
+    "prettier": "^2.3.2",
+    "tslib": "^2.3.0"
   },
   "bugs": "https://github.com/theintern/dev/issues",
   "keywords": [
@@ -72,16 +74,13 @@
   },
   "lint-staged": {
     "src/**/*.{ts,json,css}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.ts": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "ts*.json": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "pre-commit": "precommit"

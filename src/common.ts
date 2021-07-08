@@ -7,7 +7,7 @@ import {
   sed,
   test,
   ExecOptions,
-  ExecOutputReturnValue
+  ExecOutputReturnValue,
 } from 'shelljs';
 import { sync as globSync, IOptions } from 'glob';
 import { basename, dirname, join, normalize, relative, resolve } from 'path';
@@ -28,7 +28,6 @@ export { internDev };
 
 const tsconfig = readTsconfigFile('tsconfig.json');
 // normalize the buildDir because tsconfig likes './', but glob (used later)
-//
 // does not
 const buildDir = relative(process.cwd(), normalize(tsconfig.options.outDir!));
 export { buildDir, tsconfig };
@@ -42,7 +41,7 @@ export interface FilePattern {
  * Copy the files denoted by an array of glob patterns into a given directory.
  */
 export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
-  patterns.forEach(pattern => {
+  patterns.forEach((pattern) => {
     let filePattern: string;
     const options: IOptions = {};
 
@@ -54,7 +53,7 @@ export function copyAll(patterns: (string | FilePattern)[], outDir: string) {
       filePattern = pattern;
     }
 
-    glob(filePattern, options).forEach(function(filename) {
+    glob(filePattern, options).forEach(function (filename) {
       log(`Copying ${filename} to ${outDir}`);
       copyFile(join(options.cwd!, filename), outDir);
     });
@@ -103,8 +102,8 @@ export function exec(command: string, options?: ExecOptions) {
  */
 export function fixSourceMaps() {
   globSync(join(buildDir, '**', '*.js.map'), {
-    nodir: true
-  }).forEach(filename => {
+    nodir: true,
+  }).forEach((filename) => {
     sed(
       '-i',
       /("sources":\[")(.*?)("\])/,
@@ -155,14 +154,11 @@ export function glob(pattern: string, options?: IOptions) {
 /**
  * Lint a project
  */
-export function lint(tsconfigFile: string) {
-  // Use the tslint file from this project if the project doesn't have one of
+export function lint() {
+  // Use the eslint file from this project if the project doesn't have one of
   // its own
-  let tslintJson = test('-f', 'tslint.json')
-    ? 'tslint.json'
-    : resolve(join(__dirname, 'tslint.json'));
-  const tslint = require.resolve('tslint/bin/tslint');
-  spawnSync('node', [tslint, '-c', tslintJson, '--project', tsconfigFile]);
+  const eslint = require.resolve('eslint/bin/eslint');
+  spawnSync('node', [eslint, '--ext', '.ts', 'src'], { stdio: 'inherit' });
 }
 
 /**
@@ -191,7 +187,7 @@ export function readJsonFile(filename: string) {
  * Read a tsconfig file, which may extend other tsconfig files
  */
 export function readTsconfigFile(filename: string) {
-  let data = readConfigFile(filename, (name: string) =>
+  const data = readConfigFile(filename, (name: string) =>
     readFileSync(name, { encoding: 'utf8' })
   );
   if (data.error) {

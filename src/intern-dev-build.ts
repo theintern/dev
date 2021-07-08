@@ -10,7 +10,7 @@ import {
   ChildProcess,
   spawn,
   spawnSync,
-  SpawnSyncReturns
+  SpawnSyncReturns,
 } from 'child_process';
 import { watch, FSWatcher } from 'chokidar';
 import { dirname, join } from 'path';
@@ -24,7 +24,7 @@ import {
   getConfigs,
   internDev,
   lint,
-  log
+  log,
 } from './common';
 
 const args = process.argv.slice(2);
@@ -55,11 +55,12 @@ const buildDst = join(buildDir, 'src');
 const resources = internDev.resources || {};
 resources[buildDst] = (resources[buildDst] || []).concat([
   'package.json',
+  'eslint.config.js',
   'README*',
-  'LICENSE*'
+  'LICENSE*',
 ]);
 try {
-  Object.keys(resources).forEach(dest => {
+  Object.keys(resources).forEach((dest) => {
     copyAll(resources[dest], dest);
     if (watchMode) {
       createFileWatcher(resources[dest], dest);
@@ -73,9 +74,9 @@ try {
 // Typescript
 // -----------------------------------------------------------------
 try {
-  getConfigs().forEach(tsconfig => {
+  getConfigs().forEach((tsconfig) => {
     log(`Linting ${dirname(tsconfig)}`);
-    lint(tsconfig);
+    lint();
 
     log(`Compiling ${dirname(tsconfig)}`);
     const tag = `tsc:${dirname(tsconfig)}`;
@@ -110,7 +111,7 @@ if (webpackConfig) {
         webpack,
         '--config',
         webpackConfig,
-        '--watch'
+        '--watch',
       ]);
       watchProcess('webpack', proc, /^ERROR\b/);
     } else {
@@ -135,11 +136,11 @@ function createFileWatcher(
     dstDir = [dstDir];
   }
 
-  dstDir.forEach(dir => mkdir('-p', dirname(dir)));
+  dstDir.forEach((dir) => mkdir('-p', dirname(dir)));
 
   const watcher = watch(patterns)
     .on('ready', () => {
-      log(`Watching files for ${patterns[0]} => ${dstDir}`);
+      log(`Watching files for ${patterns[0]} => ${JSON.stringify(dstDir)}`);
       watcher.on('add', (file: string) => copy(file, dstDir));
       watcher.on('change', (file: string) => copy(file, dstDir));
       watcher.on('unlink', (file: string) => remove(file, dstDir));
@@ -155,16 +156,18 @@ function copy(file: string, dstDir: string | string[]) {
   if (!Array.isArray(dstDir)) {
     dstDir = [dstDir];
   }
-  dstDir.forEach(dir => {
+  dstDir.forEach((dir) => {
     copyFile(file, dir);
     log(`Copied ${file} -> ${dir}`);
   });
 }
 
-function handleError(error: Error) {
+function handleError(
+  error: Error & { stderr?: string; stdout?: string; code: number }
+) {
   if (error.name === 'ExecError') {
-    log(chalk.red((<any>error).stderr || (<any>error).stdout));
-    process.exit((<any>error).code);
+    log(chalk.red(error.stderr || error.stdout));
+    process.exit(error.code);
   } else {
     throw error;
   }
@@ -198,20 +201,21 @@ function logProcessOutput(
   }
   let lines = text
     .split('\n')
-    .filter(line => !/^\s*$/.test(line))
-    .filter(line => !/^Child$/.test(line))
-    .map(line => line.replace(/\s+$/, ''))
+    .filter((line) => !/^\s*$/.test(line))
+    .filter((line) => !/^Child$/.test(line))
+    .map((line) => line.replace(/\s+$/, ''))
     // Strip off timestamps
-    .map(
-      line =>
-        /^\d\d:\d\d:\d\d \w\w -/.test(line)
-          ? line.slice(line.indexOf('-') + 2)
-          : line
+    .map((line) =>
+      /^\d\d:\d\d:\d\d \w\w -/.test(line)
+        ? line.slice(line.indexOf('-') + 2)
+        : line
     );
   if (errorTest) {
-    lines = lines.map(line => (errorTest.test(line) ? chalk.red(line) : line));
+    lines = lines.map((line) =>
+      errorTest.test(line) ? chalk.red(line) : line
+    );
   }
-  lines.forEach(line => {
+  lines.forEach((line) => {
     log(`[${name}] ${line}`);
   });
 }
@@ -220,7 +224,7 @@ function remove(file: string, dstDir: string | string[]) {
   if (!Array.isArray(dstDir)) {
     dstDir = [dstDir];
   }
-  dstDir.forEach(dir => {
+  dstDir.forEach((dir) => {
     try {
       const path = join(dir, file);
       rm(path);
@@ -232,10 +236,10 @@ function remove(file: string, dstDir: string | string[]) {
 }
 
 function watchProcess(name: string, proc: ChildProcess, errorTest?: RegExp) {
-  proc.stdout.on('data', (data: Buffer) => {
+  proc.stdout?.on('data', (data: Buffer) => {
     logProcessOutput(name, data.toString('utf8'), errorTest);
   });
-  proc.stderr.on('data', (data: Buffer) => {
+  proc.stderr?.on('data', (data: Buffer) => {
     logProcessOutput(name, data.toString('utf8'), errorTest);
   });
   proc.on('error', () => {

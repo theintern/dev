@@ -5,7 +5,7 @@
 
 // Generate API doc data for a project
 
-import { Application } from 'typedoc';
+import { Application, Reflection, TSConfigReader } from 'typedoc';
 import { isAbsolute, join, relative } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { sync as resolve } from 'resolve';
@@ -14,14 +14,16 @@ import { log } from './common';
 
 // Use TypeDoc to generate an API description
 log('Generating API data');
-const options = {
-  tsconfig: 'tsconfig.json',
+
+const app = new Application();
+app.options.addReader(new TSConfigReader());
+app.bootstrap({
+  entryPoints: ['./src/index.ts'],
   logger: 'none',
-  excludePrivate: true
-};
-const app = new Application(options);
-const inputFiles = app.options.read(options).inputFiles;
-const project = app.convert(inputFiles);
+  excludePrivate: true,
+});
+
+const project = app.convert();
 
 if (!project) {
   log(chalk.red('The project could not be analyzed.'));
@@ -42,7 +44,11 @@ scrubPaths(project);
 log('Normalizing line endings');
 normalizeLineEndings(project);
 
-const json = JSON.stringify(project!.toObject(), null, '\t');
+const json = JSON.stringify(
+  app.serializer.projectToObject(project),
+  null,
+  '\t'
+);
 
 if (!existsSync('docs')) {
   log('Making docs directory');
@@ -59,7 +65,7 @@ function normalizeLineEndings(reflection: any) {
     reflection,
     '__lenormalized__',
     (_, value) => typeof value === 'string' && /\r\n/.test(value),
-    value => value.replace(/\r\n/g, '\n')
+    (value) => value.replace(/\r\n/g, '\n')
   );
 }
 
@@ -94,7 +100,7 @@ function scrubPath(value: string) {
 function walk(
   reflection: any,
   sentinel: string,
-  test: (key: string, value: any) => boolean,
+  test: (key: string, value: unknown) => boolean,
   modify: (value: any) => any
 ) {
   if (reflection[sentinel]) {
@@ -110,7 +116,7 @@ function walk(
       }
     }
   } else if (typeof reflection === 'object') {
-    const keys = Object.keys(reflection);
+    const keys = Object.keys(reflection) as (keyof Reflection)[];
     for (const key of keys) {
       const value = reflection[key];
       if (value == null) {
@@ -120,7 +126,7 @@ function walk(
       if (test(key, value)) {
         reflection[key] = modify(value);
       } else if (typeof value === 'object') {
-        walk(value, sentinel, test, modify);
+        walk(value as Reflection, sentinel, test, modify);
       }
     }
   }
