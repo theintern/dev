@@ -15,10 +15,12 @@ import { log } from './common';
 // Use TypeDoc to generate an API description
 log('Generating API data');
 
+const entryPoints = process.argv.slice(2);
+
 const app = new Application();
 app.options.addReader(new TSConfigReader());
 app.bootstrap({
-  entryPoints: ['./src/index.ts'],
+  entryPoints: entryPoints.length > 0 ? entryPoints : ['./src/index.ts'],
   logger: 'none',
   excludePrivate: true,
 });
