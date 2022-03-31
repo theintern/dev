@@ -16,16 +16,18 @@ import { log } from './common';
 log('Generating API data');
 
 const entryPoints = process.argv.slice(2);
+if (entryPoints.length === 0) {
+  entryPoints.push('./src/index.ts');
+}
 
 const app = new Application();
 app.options.addReader(new TSConfigReader());
 app.bootstrap({
-  entryPoints: entryPoints.length > 0 ? entryPoints : ['./src/index.ts'],
   logger: 'none',
   excludePrivate: true,
 });
 
-const project = app.convert();
+const project = app.convert(entryPoints);
 
 if (!project) {
   log(chalk.red('The project could not be analyzed.'));
